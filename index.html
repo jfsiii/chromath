@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Chromath by jfsiii</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Chromath</h1>
+        <p class="header">JavaScript color conversion and manipulation functions</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/jfsiii/chromath/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/jfsiii/chromath/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/jfsiii/chromath">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/jfsiii">jfsiii</a></p>
+
+
+      </header>
+      <section>
+        <h1>chromath</h1>
+
+<h2>Overview</h2>
+
+<p>chromath provides provides many color conversion and manipulation functions.</p>
+
+<h2>Getting started</h2>
+
+<p>In the browser:</p>
+
+<pre><code>&lt;script src="/path/to/chromath.js"&gt;&lt;/script&gt;
+</code></pre>
+
+<p>In NodeJS:</p>
+
+<pre><code>npm install chromath
+</code></pre>
+
+<p>then</p>
+
+<pre><code>var Chromath = require('chromath')
+</code></pre>
+
+<p>From there, the usage is identical in both environments.</p>
+
+<h2>Functional or Object-oriented</h2>
+
+<p>You can use chromath in a functional or object-oriented manner.</p>
+
+<pre><code>var red = new Chromath('rgb(255, 0, 0)');
+red.towards('yellow', 0.5).toString(); // #FF7F00
+</code></pre>
+
+<p>is the same as</p>
+
+<pre><code>Chromath.towards('red', 'yellow', 0.5).toString(); // #FF7F00
+</code></pre>
+
+<p>The only difference between instance methods and Class methods with
+  the same name (e.g, <code>Chromath.tint</code> and <code>tint</code>) is that the instance
+  methods pass the instance value as the first argument.</p>
+
+<p>Here's the definition of <code>Chromath.prototype.tint</code>:</p>
+
+<pre><code>tint: function (by) {
+    return Chromath.tint(this, by);
+}
+</code></pre>
+
+<p>In NodeJS you can only pull in the portions you're interesed in,
+  e.g:</p>
+
+<pre><code>&gt; var fromRGBToHex = require('chromath').rgb2hex
+&gt; fromRGBToHex(234, 56, 78)
+'#EA384E'
+</code></pre>
+
+<h2>Documentation</h2>
+
+<p><a href="http://JFSIII.org/project/chromath/docs/">http://JFSIII.org/project/chromath/docs/</a></p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
