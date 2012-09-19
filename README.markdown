@@ -15,7 +15,7 @@
 
   then
 
-    var Chromath = require('/path/to/chromath')
+    var Chromath = require('chromath')
 
   From there, the usage is identical in both environments.
 
@@ -33,7 +33,7 @@
   the same name (e.g, `Chromath.tint` and `tint`) is that the instance
   methods pass the instance value as the first argument.
 
-  Here's the definition of Chromath.prototype.tint:
+  Here's the definition of `Chromath.prototype.tint`:
 
     tint: function (by) {
         return Chromath.tint(this, by);
@@ -42,8 +42,8 @@
   In NodeJS you can only pull in the portions you're interesed in,
   e.g:
 
-    > var convertRGBtoHex = require('chromath').rgb2hex
-    > convertRGBtoHex(234, 56, 78)
+    > var fromRGBToHex = require('chromath').rgb2hex
+    > fromRGBToHex(234, 56, 78)
     '#EA384E'
 
 ## Documentation
