@@ -2,7 +2,15 @@
 
 ## Overview
 
-  chromath provides provides many color conversion and manipulation functions.
+  chromath provides provides many color conversion and manipulation functions. 
+  
+  You can:
+
+ * Create a color from just about any reasonable string
+ * Convert from one color space to another (rgb->hex, hsv->hsl, rgb->hex->hsl->rgb)
+ * Add two colors (using additive or subtractive color)
+ * Get a color scheme (complement, split complement, triad, tetrad, etc) based on a color
+ * Lots more. [Take a look at the docs](http://JFSIII.org/project/chromath/docs/)
 
 ## Getting started
   In the browser:
@@ -48,3 +56,6 @@
 
 ## Documentation
   <http://JFSIII.org/project/chromath/docs/>
+
+## License
+[MIT](http://jfsiii.mit-license.org)
