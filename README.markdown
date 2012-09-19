@@ -47,4 +47,4 @@
     '#EA384E'
 
 ## Documentation
-  <http://JFSIII.org/project/colorjs/docs/>
+  <http://JFSIII.org/project/chromath/docs/>
