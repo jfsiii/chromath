@@ -140,13 +140,13 @@ Chromath.rgb = function (r, g, b, a)
 };
 
 /*
-  Method: Chromath.rgba
+  Constructor: Chromath.rgba
   Alias for <Chromath.rgb>
 */
 Chromath.rgba = Chromath.rgb;
 
 /*
-  Method: Chromath.hsl
+  Constructor: Chromath.hsl
   Create a new Chromath instance from HSL values
 
   Parameters:
@@ -177,13 +177,13 @@ Chromath.hsl = function (h, s, l, a)
 };
 
 /*
-  Method: Chromath.hsla
+  Constructor: Chromath.hsla
   Alias for <Chromath.hsl>
 */
 Chromath.hsla = Chromath.hsl;
 
 /*
-  Method: Chromath.hsv
+  Constructor: Chromath.hsv
   Create a new Chromath instance from HSV values
 
   Parameters:
@@ -214,19 +214,19 @@ Chromath.hsv = function (h, s, v, a)
 };
 
 /*
-  Method: Chromath.hsva
+  Constructor: Chromath.hsva
   Alias for <Chromath.hsv>
 */
 Chromath.hsva = Chromath.hsv;
 
 /*
-    Method: Chromath.hsb
-    Alias for <Chromath.hsv>
+  Constructor: Chromath.hsb
+  Alias for <Chromath.hsv>
  */
 Chromath.hsb = Chromath.hsv;
 
 /*
-   Method: Chromath.hsba
+   Constructor: Chromath.hsba
    Alias for <Chromath.hsva>
  */
 Chromath.hsba = Chromath.hsva;
