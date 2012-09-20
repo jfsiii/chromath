@@ -667,83 +667,14 @@ Chromath.splitcomplement = function (color)
     return ret;
 };
 
-//Group: Static SOMETHING color methods
-/*
-  Method: Chromath.towards
-  Move from one color towards another by the given percentage (0-1, 0-100)
-
-  Parameters:
-  from - The starting color
-  to - The destination color
-  by - The percentage, expressed as a floating number between 0 and 1, to move towards the destination color
-
-  > > Chromath.towards('red', 'yellow', 0.5).toString()
-  > "#FF7F00"
-*/
-Chromath.towards = function (from, to, by)
-{
-    if (!to) { return from; }
-    if (!isFinite(by))
-        throw new Error('TypeError: `by`(' + by  +') should be between 0 and 1');
-    if (!(from instanceof Chromath)) from = new Chromath(from);
-    if (!(to instanceof Chromath)) to = new Chromath(to || '#FFFFFF');
-    by = parseFloat(by);
-
-    return new Chromath({
-        r: lerp(from.r, to.r, by),
-        g: lerp(from.g, to.g, by),
-        b: lerp(from.b, to.b, by),
-        a: lerp(from.a, to.a, by)
-    });
-};
-
-/*
-  Method: Chromath.gradient
-  Create an array of Chromath objects
-
-  Parameters:
-  from - The beginning color of the gradient
-  to - The end color of the gradient
-  slices - The number of colors in the array
-  slice - The color at a specific, 1-based, slice index
-
-  Examples:
-  > > Chromath.gradient('red', 'yellow').length;
-  > 20
-
-  > > Chromath.gradient('red', 'yellow', 5).toString();
-  > "#FF0000,#FF3F00,#FF7F00,#FFBF00,#FFFF00"
-
-  > > Chromath.gradient('red', 'yellow', 5, 2).toString();
-  > "#FF7F00"
-
-  > > Chromath.gradient('red', 'yellow', 5)[2].toString();
-  > "#FF7F00"
- */
-Chromath.gradient = function (from, to, slices, slice)
-{
-    var gradient = [], stops;
-
-    if (! slices) slices = 20;
-    stops = (slices-1);
-
-    if (isFinite(slice)) return Chromath.towards(from, to, slice/stops);
-    else slice = -1;
-
-    while (++slice < slices){
-        gradient.push(Chromath.towards(from, to, slice/stops))
-    }
-
-    return gradient;
-};
-
+//Group: Static color alteration methods
 /*
   Method: Chromath.tint
   Lighten a color by adding a percentage of white to it
 
   Returns <Chromath>
 
-  > > Chromath.lighten('rgb(0, 100, 255)', 0.5).toRGBString();
+  > > Chromath.tint('rgb(0, 100, 255)', 0.5).toRGBString();
   > 'rgb(127,177,255)'
 */
 Chromath.tint = function ( from, by )
@@ -776,6 +707,75 @@ Chromath.shade = function ( from, by )
  */
 Chromath.darken = Chromath.shade;
 
+/*
+  Method: Chromath.desaturate
+  Desaturate a color using any of 3 approaches
+
+  Parameters:
+  color - any argument accepted by the <Chromath> constructor
+  formula - The formula to use (from <xarg's greyfilter at http://www.xarg.org/project/jquery-color-plugin-xcolor>)
+  - 1 - xarg's own formula
+  - 2 - Sun's formula: (1 - avg) / (100 / 35) + avg)
+  - empty - The oft-seen 30% red, 59% green, 11% blue formula
+
+  Examples:
+  > > Chromath.desaturate('red').toString()
+  > "#4C4C4C"
+
+  > > Chromath.desaturate('red', 1).toString()
+  > "#373737"
+
+  > > Chromath.desaturate('red', 2).toString()
+  > "#909090"
+*/
+Chromath.desaturate = function (color, formula)
+{
+    var c = new Chromath(color), rgb, avg;
+
+    switch (formula) {
+    case 1: // xarg's formula
+        avg = .35 + 13 * (c.r + c.g + c.b) / 60; break;
+    case 2: // Sun's formula: (1 - avg) / (100 / 35) + avg)
+        avg = (13 * (c.r + c.g + c.b) + 5355) / 60; break;
+    default:
+        avg = c.r * .3 + c.g * .59 + c.b * .11;
+    }
+
+    avg = clamp(avg, 0, 255);
+    rgb = {r: avg, g: avg, b: avg};
+
+    return new Chromath(rgb);
+};
+
+/*
+  Method: Chromath.greyscale
+  Alias for <Chromath.desaturate>
+*/
+Chromath.greyscale = Chromath.desaturate;
+
+/*
+  Method: Chromath.websafe
+  Convert a color to one of the 216 "websafe" colors
+
+  Examples:
+  > > Chromath.websafe('#ABCDEF').toString()
+  > '#99CCFF'
+
+  > > Chromath.websafe('#BBCDEF').toString()
+  > '#CCCCFF'
+ */
+Chromath.websafe = function (color)
+{
+    color = new Chromath(color);
+
+    color.r = Math.round(color.r / 51) * 51;
+    color.g = Math.round(color.g / 51) * 51;
+    color.b = Math.round(color.b / 51) * 51;
+
+    return new Chromath(color);
+};
+
+//Group: Static color combination methods
 /*
   Method: Chromath.additive
   Combine any number colors using additive color
@@ -902,52 +902,6 @@ Chromath.average = function ()
 };
 
 /*
-  Method: Chromath.desaturate
-  Desaturate a color using any of 3 approaches
-
-  Parameters:
-  color - any argument accepted by the <Chromath> constructor
-  formula - The formula to use (from <xarg's greyfilter at http://www.xarg.org/project/jquery-color-plugin-xcolor>)
-  - 1 - xarg's own formula
-  - 2 - Sun's formula: (1 - avg) / (100 / 35) + avg)
-  - empty - The oft-seen 30% red, 59% green, 11% blue formula
-
-  Examples:
-  > > Chromath.desaturate('red').toString()
-  > "#4C4C4C"
-
-  > > Chromath.desaturate('red', 1).toString()
-  > "#373737"
-
-  > > Chromath.desaturate('red', 2).toString()
-  > "#909090"
-*/
-Chromath.desaturate = function (color, formula)
-{
-    var c = new Chromath(color), rgb, avg;
-
-    switch (formula) {
-    case 1: // xarg's formula
-        avg = .35 + 13 * (c.r + c.g + c.b) / 60; break;
-    case 2: // Sun's formula: (1 - avg) / (100 / 35) + avg)
-        avg = (13 * (c.r + c.g + c.b) + 5355) / 60; break;
-    default:
-        avg = c.r * .3 + c.g * .59 + c.b * .11;
-    }
-
-    avg = clamp(avg, 0, 255);
-    rgb = {r: avg, g: avg, b: avg};
-
-    return new Chromath(rgb);
-};
-
-/*
-  Method: Chromath.greyscale
-  Alias for <Chromath.desaturate>
-*/
-Chromath.greyscale = Chromath.desaturate;
-
-/*
   Method: Chromath.overlay
   Add one color on top of another with a given transparency
 
@@ -971,27 +925,77 @@ Chromath.overlay = function (top, bottom, opacity)
                       b: lerp(a.b, b.b, opacity)});
 };
 
+
+//Group: Static SOMETHING color methods
 /*
-  Method: Chromath.websafe
-  Convert a color to one of the 216 "websafe" colors
+  Method: Chromath.towards
+  Move from one color towards another by the given percentage (0-1, 0-100)
+
+  Parameters:
+  from - The starting color
+  to - The destination color
+  by - The percentage, expressed as a floating number between 0 and 1, to move towards the destination color
+
+  > > Chromath.towards('red', 'yellow', 0.5).toString()
+  > "#FF7F00"
+*/
+Chromath.towards = function (from, to, by)
+{
+    if (!to) { return from; }
+    if (!isFinite(by))
+        throw new Error('TypeError: `by`(' + by  +') should be between 0 and 1');
+    if (!(from instanceof Chromath)) from = new Chromath(from);
+    if (!(to instanceof Chromath)) to = new Chromath(to || '#FFFFFF');
+    by = parseFloat(by);
+
+    return new Chromath({
+        r: lerp(from.r, to.r, by),
+        g: lerp(from.g, to.g, by),
+        b: lerp(from.b, to.b, by),
+        a: lerp(from.a, to.a, by)
+    });
+};
+
+/*
+  Method: Chromath.gradient
+  Create an array of Chromath objects
+
+  Parameters:
+  from - The beginning color of the gradient
+  to - The end color of the gradient
+  slices - The number of colors in the array
+  slice - The color at a specific, 1-based, slice index
 
   Examples:
-  > > Chromath.websafe('#ABCDEF').toString()
-  > '#99CCFF'
+  > > Chromath.gradient('red', 'yellow').length;
+  > 20
 
-  > > Chromath.websafe('#BBCDEF').toString()
-  > '#CCCCFF'
+  > > Chromath.gradient('red', 'yellow', 5).toString();
+  > "#FF0000,#FF3F00,#FF7F00,#FFBF00,#FFFF00"
+
+  > > Chromath.gradient('red', 'yellow', 5, 2).toString();
+  > "#FF7F00"
+
+  > > Chromath.gradient('red', 'yellow', 5)[2].toString();
+  > "#FF7F00"
  */
-Chromath.websafe = function (color)
+Chromath.gradient = function (from, to, slices, slice)
 {
-    color = new Chromath(color);
+    var gradient = [], stops;
 
-    color.r = Math.round(color.r / 51) * 51;
-    color.g = Math.round(color.g / 51) * 51;
-    color.b = Math.round(color.b / 51) * 51;
+    if (! slices) slices = 20;
+    stops = (slices-1);
 
-    return new Chromath(color);
+    if (isFinite(slice)) return Chromath.towards(from, to, slice/stops);
+    else slice = -1;
+
+    while (++slice < slices){
+        gradient.push(Chromath.towards(from, to, slice/stops))
+    }
+
+    return gradient;
 };
+
 
 // Group: Instance representation methods
 Chromath.prototype = {
@@ -1470,27 +1474,7 @@ Chromath.prototype = {
         return Chromath.splitcomplement(this);
     },
 
-    // Group: Instance SOMETHING methods
-    /*
-       Method: clone
-       Return an independent copy of the instance
-    */
-    clone: function (){
-        return new Chromath(this);
-    },
-
-    /*
-       Method: towards
-       Calls <Chromath.towards> with the current instance as the first parameter
-
-       > > var red = new Chromath('red');
-       > > red.towards('yellow', 0.55).toString();
-       > "#FF8C00"
-    */
-    towards: function (to, by) {
-        return Chromath.towards(this, to, by);
-    },
-
+    // Group: Instance color alteration methods
     /*
        Method: tint
        Calls <Chromath.tint> with the current instance as the first parameter
@@ -1500,6 +1484,14 @@ Chromath.prototype = {
     */
     tint: function (by) {
         return Chromath.tint(this, by);
+    },
+
+    /*
+       Method: lighten
+       Alias for <tint>
+    */
+    lighten: function (by) {
+      return this.tint(by);
     },
 
     /*
@@ -1513,6 +1505,54 @@ Chromath.prototype = {
         return Chromath.shade(this, by);
     },
 
+    /*
+       Method: darken
+       Alias for <shade>
+    */
+    darken: function (by) {
+      return this.shade(by);
+    },
+
+    /*
+       Method: desaturate
+       Calls <Chromath.desaturate> with the current instance as the first parameter
+
+     > > new Chromath('orange').desaturate().toString();
+     > "#ADADAD"
+
+     > > new Chromath('orange').desaturate(1).toString();
+     > "#5B5B5B"
+
+     > > new Chromath('orange').desaturate(2).toString();
+     > "#B4B4B4"
+     */
+    desaturate: function (formula){
+        return Chromath.desaturate(this, formula);
+    },
+
+    /*
+      Method: greyscale
+      Alias for <desaturate>
+    */
+    greyscale: function (formula) {
+      return this.desaturate(formula);
+    },
+
+    /*
+       Method: websafe
+       Calls <Chromath.websafe> with the current instance as the first parameter
+
+       > > Chromath.rgb(123, 234, 56).toString();
+       > "#7BEA38"
+
+       > Chromath.rgb(123, 234, 56).websafe().toString();
+       > "#66FF33"
+     */
+    websafe: function (){
+        return Chromath.websafe(this);
+    },
+
+    // Group: Instance color combination methods
     /*
        Method: additive
        Calls <Chromath.additive> with the current instance as the first parameter
@@ -1562,23 +1602,6 @@ Chromath.prototype = {
     },
 
     /*
-       Method: desaturate
-       Calls <Chromath.desaturate> with the current instance as the first parameter
-
-     > > new Chromath('orange').desaturate().toString();
-     > "#ADADAD"
-
-     > > new Chromath('orange').desaturate(1).toString();
-     > "#5B5B5B"
-
-     > > new Chromath('orange').desaturate(2).toString();
-     > "#B4B4B4"
-     */
-    desaturate: function (formula){
-        return Chromath.desaturate(this, formula);
-    },
-
-    /*
        Method: overlay
        Calls <Chromath.overlay> with the current instance as the first parameter
 
@@ -1595,18 +1618,25 @@ Chromath.prototype = {
         return Chromath.overlay(this, bottom, transparency);
     },
 
+    // Group: Instance SOMETHING methods
     /*
-       Method: websafe
-       Calls <Chromath.websafe> with the current instance as the first parameter
+       Method: clone
+       Return an independent copy of the instance
+    */
+    clone: function (){
+        return new Chromath(this);
+    },
 
-       > > Chromath.rgb(123, 234, 56).toString();
-       > "#7BEA38"
+    /*
+       Method: towards
+       Calls <Chromath.towards> with the current instance as the first parameter
 
-       > Chromath.rgb(123, 234, 56).websafe().toString();
-       > "#66FF33"
-     */
-    websafe: function (){
-        return Chromath.websafe(this);
+       > > var red = new Chromath('red');
+       > > red.towards('yellow', 0.55).toString();
+       > "#FF8C00"
+    */
+    towards: function (to, by) {
+        return Chromath.towards(this, to, by);
     },
 
     /*
@@ -1975,7 +2005,7 @@ expose('Chromath', Chromath);
  * @website https://github.com/kof/expose.js
  * @licence Dual licensed under the MIT or GPL Version 2 licenses.
  */
-/* @ignore */
+/** @ignore */
 function expose(namespace, api)
 {
     var env = {};
