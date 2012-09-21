@@ -231,7 +231,318 @@ Chromath.hsb = Chromath.hsv;
  */
 Chromath.hsba = Chromath.hsva;
 
-// Group: Static color representation methods
+// Group: Static properties
+/*
+  Property: Chromath.parsers
+   An array of objects for attempting to convert a string describing a color into an object containing the various channels. No user action is required but parsers can be
+
+   Object properties:
+   regex - regular expression used to test the string or numeric input
+   process - function which is passed the results of `regex.match` and returns an object with either the rgb, hsl, hsv, or hsb channels of the Chromath.
+
+   Examples:
+(start code)
+// Add a parser
+Chromath.parsers.push({
+    example: [3554431, 16809984],
+    regex: /^\d+$/,
+    process: function (color){
+        return {
+            r: color >> 16 & 255,
+            g: color >> 8 & 255,
+            b: color & 255
+        };
+    }
+});
+(end code)
+(start code)
+// Override entirely
+Chromath.parsers = [
+   {
+       example: [3554431, 16809984],
+       regex: /^\d+$/,
+       process: function (color){
+           return {
+               r: color >> 16 & 255,
+               g: color >> 8 & 255,
+               b: color & 255
+           };
+       }
+   },
+
+   {
+       example: ['#fb0', 'f0f'],
+       regex: /^#?([\dA-F]{1})([\dA-F]{1})([\dA-F]{1})$/i,
+       process: function (hex, r, g, b){
+           return {
+               r: parseInt(r + r, 16),
+               g: parseInt(g + g, 16),
+               b: parseInt(b + b, 16)
+           };
+       }
+   }
+(end code)
+ */
+Chromath.parsers = [
+    {
+        example: ['red', 'burlywood'],
+        regex: /^[a-z]+$/i,
+        process: function (name){
+            if (Chromath.colors[name]) return Chromath.colors[name];
+        }
+    },
+    {
+        example: [3554431, 16809984],
+        regex: /^\d+$/,
+        process: function (color){
+            return {
+                //a: color >> 24 & 255,
+                r: color >> 16 & 255,
+                g: color >> 8 & 255,
+                b: color & 255
+            };
+        }
+    },
+
+    {
+        example: ['#fb0', 'f0f'],
+        regex: /^#?([\dA-F]{1})([\dA-F]{1})([\dA-F]{1})$/i,
+        process: function (hex, r, g, b){
+            return {
+                r: parseInt(r + r, 16),
+                g: parseInt(g + g, 16),
+                b: parseInt(b + b, 16)
+            };
+        }
+    },
+
+    {
+        example: ['#00ff00', '336699'],
+        regex: /^#?([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})$/i,
+        process: function (hex, r, g, b){
+            return {
+                r: parseInt(r, 16),
+                g: parseInt(g, 16),
+                b: parseInt(b, 16)
+            };
+        }
+    },
+
+    {
+        example: ['rgb(123, 234, 45)', 'rgb(25, 50%, 100%)', 'rgba(12%, 34, 56%, 0.78)'],
+        regex: /^rgba*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
+        process: function (s,r,g,b,a)
+        {
+            r = r && r.slice(-1) == '%' ? Math.round(r.slice(0,-1) * 2.55) : r*1;
+            g = g && g.slice(-1) == '%' ? Math.round(g.slice(0,-1) * 2.55) : g*1;
+            b = b && b.slice(-1) == '%' ? Math.round(b.slice(0,-1) * 2.55) : b*1;
+            a = a && a.slice(-1) == '%' ? Math.round(a.slice(0,-1) * 100) : a*1;
+
+            return {
+                r: clamp(r, 0, 255),
+                g: clamp(g, 0, 255),
+                b: clamp(b, 0, 255),
+                a: clamp(a, 0, 1) || undefined
+            };
+        }
+    },
+
+    {
+        example: ['hsl(123, 34%, 45%)', 'hsla(25, 50%, 100%, 0.75)', 'hsv(12, 34%, 56%)'],
+        regex: /^hs([bvl])a*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
+        process: function (c,lv,h,s,l,a)
+        {
+            h *= 1;
+            s = s.slice(0,-1) / 100;
+            l = l.slice(0,-1) / 100;
+            a *= 1;
+
+            var obj = {
+                h: clamp(h, 0, 360),
+                s: clamp(s, 0, 1),
+                a: clamp(l, 0, 1)
+            };
+            obj[lv] = clamp(l, 0, 1);
+
+            return obj;
+        }
+    }
+];
+
+/*
+  Property: Chromath.colors
+  Object, indexed by SVG/CSS color name, of <Chromath> instances
+  The color names from CSS and SVG 1.0
+
+  Examples:
+  > > Chromath.colors.aliceblue.toRGBArray()
+  > [240, 248, 255]
+
+  > > Chromath.colors.beige.toString()
+  > "#F5F5DC"
+
+  > // Can also be accessed without `.color`
+  > > Chromath.aliceblue.toRGBArray()
+  > [240, 248, 255]
+
+  > > Chromath.beige.toString()
+  > "#F5F5DC"
+*/
+Chromath.colors = {
+    // http://www.w3.org/TR/REC-html40/types.html#h-6.5
+    aqua: new Chromath({r: 0, g: 255, b: 255}),
+    black: new Chromath({r: 0, g: 0, b: 0}),
+    blue: new Chromath({r: 0, g: 0, b: 255}),
+    fuchsia: new Chromath({r: 255, g: 0, b: 255}),
+    gray: new Chromath({r: 128, g: 128, b: 128}),
+    green: new Chromath({r: 0, g: 128, b: 0}),
+    lime: new Chromath({r: 0, g: 255, b: 0}),
+    maroon: new Chromath({r: 128, g: 0, b: 0}),
+    navy: new Chromath({r: 0, g: 0, b: 128}),
+    olive: new Chromath({r: 128, g: 128, b: 0}),
+    purple: new Chromath({r: 128, g: 0, b: 128}),
+    red: new Chromath({r: 255, g: 0, b: 0}),
+    silver: new Chromath({r: 192, g: 192, b: 192}),
+    teal: new Chromath({r: 0, g: 128, b: 128}),
+    white: new Chromath({r: 255, g: 255, b: 255}),
+    yellow: new Chromath({r: 255, g: 255, b: 0}),
+
+    // http://www.w3.org/TR/css3-color/#svg-color
+    // http://www.w3.org/TR/SVG/types.html#ColorKeywords
+    aliceblue: new Chromath({r: 240, g: 248, b: 255}),
+    antiquewhite: new Chromath({r: 250, g: 235, b: 215}),
+    aquamarine: new Chromath({r: 127, g: 255, b: 212}),
+    azure: new Chromath({r: 240, g: 255, b: 255}),
+    beige: new Chromath({r: 245, g: 245, b: 220}),
+    bisque: new Chromath({r: 255, g: 228, b: 196}),
+    blanchedalmond: new Chromath({r: 255, g: 235, b: 205}),
+    blueviolet: new Chromath({r: 138, g: 43, b: 226}),
+    brown: new Chromath({r: 165, g: 42, b: 42}),
+    burlywood: new Chromath({r: 222, g: 184, b: 135}),
+    cadetblue: new Chromath({r: 95, g: 158, b: 160}),
+    chartreuse: new Chromath({r: 127, g: 255, b: 0}),
+    chocolate: new Chromath({r: 210, g: 105, b: 30}),
+    coral: new Chromath({r: 255, g: 127, b: 80}),
+    cornflowerblue: new Chromath({r: 100, g: 149, b: 237}),
+    cornsilk: new Chromath({r: 255, g: 248, b: 220}),
+    crimson: new Chromath({r: 220, g: 20, b: 60}),
+    cyan: new Chromath({r: 0, g: 255, b: 255}),
+    darkblue: new Chromath({r: 0, g: 0, b: 139}),
+    darkcyan: new Chromath({r: 0, g: 139, b: 139}),
+    darkgoldenrod: new Chromath({r: 184, g: 134, b: 11}),
+    darkgray: new Chromath({r: 169, g: 169, b: 169}),
+    darkgreen: new Chromath({r: 0, g: 100, b: 0}),
+    darkgrey: new Chromath({r: 169, g: 169, b: 169}),
+    darkkhaki: new Chromath({r: 189, g: 183, b: 107}),
+    darkmagenta: new Chromath({r: 139, g: 0, b: 139}),
+    darkolivegreen: new Chromath({r: 85, g: 107, b: 47}),
+    darkorange: new Chromath({r: 255, g: 140, b: 0}),
+    darkorchid: new Chromath({r: 153, g: 50, b: 204}),
+    darkred: new Chromath({r: 139, g: 0, b: 0}),
+    darksalmon: new Chromath({r: 233, g: 150, b: 122}),
+    darkseagreen: new Chromath({r: 143, g: 188, b: 143}),
+    darkslateblue: new Chromath({r: 72, g: 61, b: 139}),
+    darkslategray: new Chromath({r: 47, g: 79, b: 79}),
+    darkslategrey: new Chromath({r: 47, g: 79, b: 79}),
+    darkturquoise: new Chromath({r: 0, g: 206, b: 209}),
+    darkviolet: new Chromath({r: 148, g: 0, b: 211}),
+    deeppink: new Chromath({r: 255, g: 20, b: 147}),
+    deepskyblue: new Chromath({r: 0, g: 191, b: 255}),
+    dimgray: new Chromath({r: 105, g: 105, b: 105}),
+    dimgrey: new Chromath({r: 105, g: 105, b: 105}),
+    dodgerblue: new Chromath({r: 30, g: 144, b: 255}),
+    firebrick: new Chromath({r: 178, g: 34, b: 34}),
+    floralwhite: new Chromath({r: 255, g: 250, b: 240}),
+    forestgreen: new Chromath({r: 34, g: 139, b: 34}),
+    gainsboro: new Chromath({r: 220, g: 220, b: 220}),
+    ghostwhite: new Chromath({r: 248, g: 248, b: 255}),
+    gold: new Chromath({r: 255, g: 215, b: 0}),
+    goldenrod: new Chromath({r: 218, g: 165, b: 32}),
+    greenyellow: new Chromath({r: 173, g: 255, b: 47}),
+    grey: new Chromath({r: 128, g: 128, b: 128}),
+    honeydew: new Chromath({r: 240, g: 255, b: 240}),
+    hotpink: new Chromath({r: 255, g: 105, b: 180}),
+    indianred: new Chromath({r: 205, g: 92, b: 92}),
+    indigo: new Chromath({r: 75, g: 0, b: 130}),
+    ivory: new Chromath({r: 255, g: 255, b: 240}),
+    khaki: new Chromath({r: 240, g: 230, b: 140}),
+    lavender: new Chromath({r: 230, g: 230, b: 250}),
+    lavenderblush: new Chromath({r: 255, g: 240, b: 245}),
+    lawngreen: new Chromath({r: 124, g: 252, b: 0}),
+    lemonchiffon: new Chromath({r: 255, g: 250, b: 205}),
+    lightblue: new Chromath({r: 173, g: 216, b: 230}),
+    lightcoral: new Chromath({r: 240, g: 128, b: 128}),
+    lightcyan: new Chromath({r: 224, g: 255, b: 255}),
+    lightgoldenrodyellow: new Chromath({r: 250, g: 250, b: 210}),
+    lightgray: new Chromath({r: 211, g: 211, b: 211}),
+    lightgreen: new Chromath({r: 144, g: 238, b: 144}),
+    lightgrey: new Chromath({r: 211, g: 211, b: 211}),
+    lightpink: new Chromath({r: 255, g: 182, b: 193}),
+    lightsalmon: new Chromath({r: 255, g: 160, b: 122}),
+    lightseagreen: new Chromath({r: 32, g: 178, b: 170}),
+    lightskyblue: new Chromath({r: 135, g: 206, b: 250}),
+    lightslategray: new Chromath({r: 119, g: 136, b: 153}),
+    lightslategrey: new Chromath({r: 119, g: 136, b: 153}),
+    lightsteelblue: new Chromath({r: 176, g: 196, b: 222}),
+    lightyellow: new Chromath({r: 255, g: 255, b: 224}),
+    limegreen: new Chromath({r: 50, g: 205, b: 50}),
+    linen: new Chromath({r: 250, g: 240, b: 230}),
+    magenta: new Chromath({r: 255, g: 0, b: 255}),
+    mediumaquamarine: new Chromath({r: 102, g: 205, b: 170}),
+    mediumblue: new Chromath({r: 0, g: 0, b: 205}),
+    mediumorchid: new Chromath({r: 186, g: 85, b: 211}),
+    mediumpurple: new Chromath({r: 147, g: 112, b: 219}),
+    mediumseagreen: new Chromath({r: 60, g: 179, b: 113}),
+    mediumslateblue: new Chromath({r: 123, g: 104, b: 238}),
+    mediumspringgreen: new Chromath({r: 0, g: 250, b: 154}),
+    mediumturquoise: new Chromath({r: 72, g: 209, b: 204}),
+    mediumvioletred: new Chromath({r: 199, g: 21, b: 133}),
+    midnightblue: new Chromath({r: 25, g: 25, b: 112}),
+    mintcream: new Chromath({r: 245, g: 255, b: 250}),
+    mistyrose: new Chromath({r: 255, g: 228, b: 225}),
+    moccasin: new Chromath({r: 255, g: 228, b: 181}),
+    navajowhite: new Chromath({r: 255, g: 222, b: 173}),
+    oldlace: new Chromath({r: 253, g: 245, b: 230}),
+    olivedrab: new Chromath({r: 107, g: 142, b: 35}),
+    orange: new Chromath({r: 255, g: 165, b: 0}),
+    orangered: new Chromath({r: 255, g: 69, b: 0}),
+    orchid: new Chromath({r: 218, g: 112, b: 214}),
+    palegoldenrod: new Chromath({r: 238, g: 232, b: 170}),
+    palegreen: new Chromath({r: 152, g: 251, b: 152}),
+    paleturquoise: new Chromath({r: 175, g: 238, b: 238}),
+    palevioletred: new Chromath({r: 219, g: 112, b: 147}),
+    papayawhip: new Chromath({r: 255, g: 239, b: 213}),
+    peachpuff: new Chromath({r: 255, g: 218, b: 185}),
+    peru: new Chromath({r: 205, g: 133, b: 63}),
+    pink: new Chromath({r: 255, g: 192, b: 203}),
+    plum: new Chromath({r: 221, g: 160, b: 221}),
+    powderblue: new Chromath({r: 176, g: 224, b: 230}),
+    rosybrown: new Chromath({r: 188, g: 143, b: 143}),
+    royalblue: new Chromath({r: 65, g: 105, b: 225}),
+    saddlebrown: new Chromath({r: 139, g: 69, b: 19}),
+    salmon: new Chromath({r: 250, g: 128, b: 114}),
+    sandybrown: new Chromath({r: 244, g: 164, b: 96}),
+    seagreen: new Chromath({r: 46, g: 139, b: 87}),
+    seashell: new Chromath({r: 255, g: 245, b: 238}),
+    sienna: new Chromath({r: 160, g: 82, b: 45}),
+    skyblue: new Chromath({r: 135, g: 206, b: 235}),
+    slateblue: new Chromath({r: 106, g: 90, b: 205}),
+    slategray: new Chromath({r: 112, g: 128, b: 144}),
+    slategrey: new Chromath({r: 112, g: 128, b: 144}),
+    snow: new Chromath({r: 255, g: 250, b: 250}),
+    springgreen: new Chromath({r: 0, g: 255, b: 127}),
+    steelblue: new Chromath({r: 70, g: 130, b: 180}),
+    tan: new Chromath({r: 210, g: 180, b: 140}),
+    thistle: new Chromath({r: 216, g: 191, b: 216}),
+    tomato: new Chromath({r: 255, g: 99, b: 71}),
+    turquoise: new Chromath({r: 64, g: 224, b: 208}),
+    violet: new Chromath({r: 238, g: 130, b: 238}),
+    wheat: new Chromath({r: 245, g: 222, b: 179}),
+    whitesmoke: new Chromath({r: 245, g: 245, b: 245}),
+    yellowgreen: new Chromath({r: 154, g: 205, b: 50})
+};
+
+// Group: Static methods - representation
 /*
   Method: Chromath.toInteger
   Convert a color into an integer (alpha channel currently omitted)
@@ -276,7 +587,7 @@ Chromath.toName = function (comparison)
     for (var color in Chromath.colors) if (+Chromath[color] == comparison) return color;
 };
 
-// Group: Static color conversion methods
+// Group: Static methods - color conversion
 /*
   Method: Chromath.rgb2hex
   Convert an RGB value to a Hex value
@@ -492,7 +803,7 @@ Chromath.hsv2rgb = function (h, s, v)
  */
 Chromath.hsb2rgb = Chromath.hsv2rgb;
 
-/* Group: Static color scheme methods */
+/* Group: Static methods - color scheme */
 /*
   Method: Chromath.complement
   Return the complement of the given color
@@ -667,7 +978,7 @@ Chromath.splitcomplement = function (color)
     return ret;
 };
 
-//Group: Static color alteration methods
+//Group: Static methods - color alteration
 /*
   Method: Chromath.tint
   Lighten a color by adding a percentage of white to it
@@ -775,7 +1086,7 @@ Chromath.websafe = function (color)
     return new Chromath(color);
 };
 
-//Group: Static color combination methods
+//Group: Static methods - color combination
 /*
   Method: Chromath.additive
   Combine any number colors using additive color
@@ -926,7 +1237,7 @@ Chromath.overlay = function (top, bottom, opacity)
 };
 
 
-//Group: Static SOMETHING color methods
+//Group: Static methods - other
 /*
   Method: Chromath.towards
   Move from one color towards another by the given percentage (0-1, 0-100)
@@ -996,8 +1307,31 @@ Chromath.gradient = function (from, to, slices, slice)
     return gradient;
 };
 
+/*
+  Method: Chromath.parse
+  Iterate through the objects set in Chromath.parsers and, if a match is made, return the value specified by the matching parsers `process` function
 
-// Group: Instance representation methods
+  Parameters:
+  string - The string to parse
+
+  Example:
+  > > Chromath.parse('rgb(0, 128, 255)')
+  > { r: 0, g: 128, b: 255, a: undefined }
+ */
+Chromath.parse = function (string)
+{
+    var parsers = Chromath.parsers, i, l, parser, parts, channels;
+
+    for (i = 0, l = parsers.length; i < l; i++) {
+        parser = parsers[i];
+        parts = parser.regex.exec(string);
+        if (parts && parts.length) channels = parser.process.apply(this, parts);
+        if (channels) return channels;
+    }
+};
+
+
+// Group: Instance methods - color representation
 Chromath.prototype = {
     /*
        Method: toName
@@ -1401,7 +1735,7 @@ Chromath.prototype = {
         return this.toHSVAString();
     },
 
-    //Group: Instance color scheme methods
+    //Group: Instance methods - color scheme
     /*
        Method: complement
        Calls <Chromath.complement> with the current instance as the first parameter
@@ -1474,7 +1808,7 @@ Chromath.prototype = {
         return Chromath.splitcomplement(this);
     },
 
-    // Group: Instance color alteration methods
+    // Group: Instance methods - color alteration
     /*
        Method: tint
        Calls <Chromath.tint> with the current instance as the first parameter
@@ -1552,7 +1886,7 @@ Chromath.prototype = {
         return Chromath.websafe(this);
     },
 
-    // Group: Instance color combination methods
+    // Group: Instance methods - color combination
     /*
        Method: additive
        Calls <Chromath.additive> with the current instance as the first parameter
@@ -1618,7 +1952,7 @@ Chromath.prototype = {
         return Chromath.overlay(this, bottom, transparency);
     },
 
-    // Group: Instance SOMETHING methods
+    // Group: Instance methods - other
     /*
        Method: clone
        Return an independent copy of the instance
@@ -1654,341 +1988,6 @@ Chromath.prototype = {
     */
     gradient: function (to, slices, slice){
         return Chromath.gradient(this, to, slices, slice);
-    }
-};
-
-// Group: Static properties
-/*
-  Property: Chromath.parsers
-   An array of objects for attempting to convert a string describing a color into an object containing the various channels. No user action is required but parsers can be
-
-   Object properties:
-   regex - regular expression used to test the string or numeric input
-   process - function which is passed the results of `regex.match` and returns an object with either the rgb, hsl, hsv, or hsb channels of the Chromath.
-
-   Examples:
-(start code)
-// Add a parser
-Chromath.parsers.push({
-    example: [3554431, 16809984],
-    regex: /^\d+$/,
-    process: function (color){
-        return {
-            r: color >> 16 & 255,
-            g: color >> 8 & 255,
-            b: color & 255
-        };
-    }
-});
-(end code)
-(start code)
-// Override entirely
-Chromath.parsers = [
-   {
-       example: [3554431, 16809984],
-       regex: /^\d+$/,
-       process: function (color){
-           return {
-               r: color >> 16 & 255,
-               g: color >> 8 & 255,
-               b: color & 255
-           };
-       }
-   },
-
-   {
-       example: ['#fb0', 'f0f'],
-       regex: /^#?([\dA-F]{1})([\dA-F]{1})([\dA-F]{1})$/i,
-       process: function (hex, r, g, b){
-           return {
-               r: parseInt(r + r, 16),
-               g: parseInt(g + g, 16),
-               b: parseInt(b + b, 16)
-           };
-       }
-   }
-(end code)
- */
-Chromath.parsers = [
-    {
-        example: ['red', 'burlywood'],
-        regex: /^[a-z]+$/i,
-        process: function (name){
-            if (Chromath.colors[name]) return Chromath.colors[name];
-        }
-    },
-    {
-        example: [3554431, 16809984],
-        regex: /^\d+$/,
-        process: function (color){
-            return {
-                //a: color >> 24 & 255,
-                r: color >> 16 & 255,
-                g: color >> 8 & 255,
-                b: color & 255
-            };
-        }
-    },
-
-    {
-        example: ['#fb0', 'f0f'],
-        regex: /^#?([\dA-F]{1})([\dA-F]{1})([\dA-F]{1})$/i,
-        process: function (hex, r, g, b){
-            return {
-                r: parseInt(r + r, 16),
-                g: parseInt(g + g, 16),
-                b: parseInt(b + b, 16)
-            };
-        }
-    },
-
-    {
-        example: ['#00ff00', '336699'],
-        regex: /^#?([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})$/i,
-        process: function (hex, r, g, b){
-            return {
-                r: parseInt(r, 16),
-                g: parseInt(g, 16),
-                b: parseInt(b, 16)
-            };
-        }
-    },
-
-    {
-        example: ['rgb(123, 234, 45)', 'rgb(25, 50%, 100%)', 'rgba(12%, 34, 56%, 0.78)'],
-        regex: /^rgba*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
-        process: function (s,r,g,b,a)
-        {
-            r = r && r.slice(-1) == '%' ? Math.round(r.slice(0,-1) * 2.55) : r*1;
-            g = g && g.slice(-1) == '%' ? Math.round(g.slice(0,-1) * 2.55) : g*1;
-            b = b && b.slice(-1) == '%' ? Math.round(b.slice(0,-1) * 2.55) : b*1;
-            a = a && a.slice(-1) == '%' ? Math.round(a.slice(0,-1) * 100) : a*1;
-
-            return {
-                r: clamp(r, 0, 255),
-                g: clamp(g, 0, 255),
-                b: clamp(b, 0, 255),
-                a: clamp(a, 0, 1) || undefined
-            };
-        }
-    },
-
-    {
-        example: ['hsl(123, 34%, 45%)', 'hsla(25, 50%, 100%, 0.75)', 'hsv(12, 34%, 56%)'],
-        regex: /^hs([bvl])a*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
-        process: function (c,lv,h,s,l,a)
-        {
-            h *= 1;
-            s = s.slice(0,-1) / 100;
-            l = l.slice(0,-1) / 100;
-            a *= 1;
-
-            var obj = {
-                h: clamp(h, 0, 360),
-                s: clamp(s, 0, 1),
-                a: clamp(l, 0, 1)
-            };
-            obj[lv] = clamp(l, 0, 1);
-
-            return obj;
-        }
-    }
-];
-
-/*
-  Property: Chromath.colors
-  Object, indexed by SVG/CSS color name, of <Chromath> instances
-  The color names from CSS and SVG 1.0
-
-  Examples:
-  > > Chromath.colors.aliceblue.toRGBArray()
-  > [240, 248, 255]
-
-  > > Chromath.colors.beige.toString()
-  > "#F5F5DC"
-
-  > // Can also be accessed without `.color`
-  > > Chromath.aliceblue.toRGBArray()
-  > [240, 248, 255]
-
-  > > Chromath.beige.toString()
-  > "#F5F5DC"
-*/
-Chromath.colors = {
-    // http://www.w3.org/TR/REC-html40/types.html#h-6.5
-    aqua: new Chromath({r: 0, g: 255, b: 255}),
-    black: new Chromath({r: 0, g: 0, b: 0}),
-    blue: new Chromath({r: 0, g: 0, b: 255}),
-    fuchsia: new Chromath({r: 255, g: 0, b: 255}),
-    gray: new Chromath({r: 128, g: 128, b: 128}),
-    green: new Chromath({r: 0, g: 128, b: 0}),
-    lime: new Chromath({r: 0, g: 255, b: 0}),
-    maroon: new Chromath({r: 128, g: 0, b: 0}),
-    navy: new Chromath({r: 0, g: 0, b: 128}),
-    olive: new Chromath({r: 128, g: 128, b: 0}),
-    purple: new Chromath({r: 128, g: 0, b: 128}),
-    red: new Chromath({r: 255, g: 0, b: 0}),
-    silver: new Chromath({r: 192, g: 192, b: 192}),
-    teal: new Chromath({r: 0, g: 128, b: 128}),
-    white: new Chromath({r: 255, g: 255, b: 255}),
-    yellow: new Chromath({r: 255, g: 255, b: 0}),
-
-    // http://www.w3.org/TR/css3-color/#svg-color
-    // http://www.w3.org/TR/SVG/types.html#ColorKeywords
-    aliceblue: new Chromath({r: 240, g: 248, b: 255}),
-    antiquewhite: new Chromath({r: 250, g: 235, b: 215}),
-    aquamarine: new Chromath({r: 127, g: 255, b: 212}),
-    azure: new Chromath({r: 240, g: 255, b: 255}),
-    beige: new Chromath({r: 245, g: 245, b: 220}),
-    bisque: new Chromath({r: 255, g: 228, b: 196}),
-    blanchedalmond: new Chromath({r: 255, g: 235, b: 205}),
-    blueviolet: new Chromath({r: 138, g: 43, b: 226}),
-    brown: new Chromath({r: 165, g: 42, b: 42}),
-    burlywood: new Chromath({r: 222, g: 184, b: 135}),
-    cadetblue: new Chromath({r: 95, g: 158, b: 160}),
-    chartreuse: new Chromath({r: 127, g: 255, b: 0}),
-    chocolate: new Chromath({r: 210, g: 105, b: 30}),
-    coral: new Chromath({r: 255, g: 127, b: 80}),
-    cornflowerblue: new Chromath({r: 100, g: 149, b: 237}),
-    cornsilk: new Chromath({r: 255, g: 248, b: 220}),
-    crimson: new Chromath({r: 220, g: 20, b: 60}),
-    cyan: new Chromath({r: 0, g: 255, b: 255}),
-    darkblue: new Chromath({r: 0, g: 0, b: 139}),
-    darkcyan: new Chromath({r: 0, g: 139, b: 139}),
-    darkgoldenrod: new Chromath({r: 184, g: 134, b: 11}),
-    darkgray: new Chromath({r: 169, g: 169, b: 169}),
-    darkgreen: new Chromath({r: 0, g: 100, b: 0}),
-    darkgrey: new Chromath({r: 169, g: 169, b: 169}),
-    darkkhaki: new Chromath({r: 189, g: 183, b: 107}),
-    darkmagenta: new Chromath({r: 139, g: 0, b: 139}),
-    darkolivegreen: new Chromath({r: 85, g: 107, b: 47}),
-    darkorange: new Chromath({r: 255, g: 140, b: 0}),
-    darkorchid: new Chromath({r: 153, g: 50, b: 204}),
-    darkred: new Chromath({r: 139, g: 0, b: 0}),
-    darksalmon: new Chromath({r: 233, g: 150, b: 122}),
-    darkseagreen: new Chromath({r: 143, g: 188, b: 143}),
-    darkslateblue: new Chromath({r: 72, g: 61, b: 139}),
-    darkslategray: new Chromath({r: 47, g: 79, b: 79}),
-    darkslategrey: new Chromath({r: 47, g: 79, b: 79}),
-    darkturquoise: new Chromath({r: 0, g: 206, b: 209}),
-    darkviolet: new Chromath({r: 148, g: 0, b: 211}),
-    deeppink: new Chromath({r: 255, g: 20, b: 147}),
-    deepskyblue: new Chromath({r: 0, g: 191, b: 255}),
-    dimgray: new Chromath({r: 105, g: 105, b: 105}),
-    dimgrey: new Chromath({r: 105, g: 105, b: 105}),
-    dodgerblue: new Chromath({r: 30, g: 144, b: 255}),
-    firebrick: new Chromath({r: 178, g: 34, b: 34}),
-    floralwhite: new Chromath({r: 255, g: 250, b: 240}),
-    forestgreen: new Chromath({r: 34, g: 139, b: 34}),
-    gainsboro: new Chromath({r: 220, g: 220, b: 220}),
-    ghostwhite: new Chromath({r: 248, g: 248, b: 255}),
-    gold: new Chromath({r: 255, g: 215, b: 0}),
-    goldenrod: new Chromath({r: 218, g: 165, b: 32}),
-    greenyellow: new Chromath({r: 173, g: 255, b: 47}),
-    grey: new Chromath({r: 128, g: 128, b: 128}),
-    honeydew: new Chromath({r: 240, g: 255, b: 240}),
-    hotpink: new Chromath({r: 255, g: 105, b: 180}),
-    indianred: new Chromath({r: 205, g: 92, b: 92}),
-    indigo: new Chromath({r: 75, g: 0, b: 130}),
-    ivory: new Chromath({r: 255, g: 255, b: 240}),
-    khaki: new Chromath({r: 240, g: 230, b: 140}),
-    lavender: new Chromath({r: 230, g: 230, b: 250}),
-    lavenderblush: new Chromath({r: 255, g: 240, b: 245}),
-    lawngreen: new Chromath({r: 124, g: 252, b: 0}),
-    lemonchiffon: new Chromath({r: 255, g: 250, b: 205}),
-    lightblue: new Chromath({r: 173, g: 216, b: 230}),
-    lightcoral: new Chromath({r: 240, g: 128, b: 128}),
-    lightcyan: new Chromath({r: 224, g: 255, b: 255}),
-    lightgoldenrodyellow: new Chromath({r: 250, g: 250, b: 210}),
-    lightgray: new Chromath({r: 211, g: 211, b: 211}),
-    lightgreen: new Chromath({r: 144, g: 238, b: 144}),
-    lightgrey: new Chromath({r: 211, g: 211, b: 211}),
-    lightpink: new Chromath({r: 255, g: 182, b: 193}),
-    lightsalmon: new Chromath({r: 255, g: 160, b: 122}),
-    lightseagreen: new Chromath({r: 32, g: 178, b: 170}),
-    lightskyblue: new Chromath({r: 135, g: 206, b: 250}),
-    lightslategray: new Chromath({r: 119, g: 136, b: 153}),
-    lightslategrey: new Chromath({r: 119, g: 136, b: 153}),
-    lightsteelblue: new Chromath({r: 176, g: 196, b: 222}),
-    lightyellow: new Chromath({r: 255, g: 255, b: 224}),
-    limegreen: new Chromath({r: 50, g: 205, b: 50}),
-    linen: new Chromath({r: 250, g: 240, b: 230}),
-    magenta: new Chromath({r: 255, g: 0, b: 255}),
-    mediumaquamarine: new Chromath({r: 102, g: 205, b: 170}),
-    mediumblue: new Chromath({r: 0, g: 0, b: 205}),
-    mediumorchid: new Chromath({r: 186, g: 85, b: 211}),
-    mediumpurple: new Chromath({r: 147, g: 112, b: 219}),
-    mediumseagreen: new Chromath({r: 60, g: 179, b: 113}),
-    mediumslateblue: new Chromath({r: 123, g: 104, b: 238}),
-    mediumspringgreen: new Chromath({r: 0, g: 250, b: 154}),
-    mediumturquoise: new Chromath({r: 72, g: 209, b: 204}),
-    mediumvioletred: new Chromath({r: 199, g: 21, b: 133}),
-    midnightblue: new Chromath({r: 25, g: 25, b: 112}),
-    mintcream: new Chromath({r: 245, g: 255, b: 250}),
-    mistyrose: new Chromath({r: 255, g: 228, b: 225}),
-    moccasin: new Chromath({r: 255, g: 228, b: 181}),
-    navajowhite: new Chromath({r: 255, g: 222, b: 173}),
-    oldlace: new Chromath({r: 253, g: 245, b: 230}),
-    olivedrab: new Chromath({r: 107, g: 142, b: 35}),
-    orange: new Chromath({r: 255, g: 165, b: 0}),
-    orangered: new Chromath({r: 255, g: 69, b: 0}),
-    orchid: new Chromath({r: 218, g: 112, b: 214}),
-    palegoldenrod: new Chromath({r: 238, g: 232, b: 170}),
-    palegreen: new Chromath({r: 152, g: 251, b: 152}),
-    paleturquoise: new Chromath({r: 175, g: 238, b: 238}),
-    palevioletred: new Chromath({r: 219, g: 112, b: 147}),
-    papayawhip: new Chromath({r: 255, g: 239, b: 213}),
-    peachpuff: new Chromath({r: 255, g: 218, b: 185}),
-    peru: new Chromath({r: 205, g: 133, b: 63}),
-    pink: new Chromath({r: 255, g: 192, b: 203}),
-    plum: new Chromath({r: 221, g: 160, b: 221}),
-    powderblue: new Chromath({r: 176, g: 224, b: 230}),
-    rosybrown: new Chromath({r: 188, g: 143, b: 143}),
-    royalblue: new Chromath({r: 65, g: 105, b: 225}),
-    saddlebrown: new Chromath({r: 139, g: 69, b: 19}),
-    salmon: new Chromath({r: 250, g: 128, b: 114}),
-    sandybrown: new Chromath({r: 244, g: 164, b: 96}),
-    seagreen: new Chromath({r: 46, g: 139, b: 87}),
-    seashell: new Chromath({r: 255, g: 245, b: 238}),
-    sienna: new Chromath({r: 160, g: 82, b: 45}),
-    skyblue: new Chromath({r: 135, g: 206, b: 235}),
-    slateblue: new Chromath({r: 106, g: 90, b: 205}),
-    slategray: new Chromath({r: 112, g: 128, b: 144}),
-    slategrey: new Chromath({r: 112, g: 128, b: 144}),
-    snow: new Chromath({r: 255, g: 250, b: 250}),
-    springgreen: new Chromath({r: 0, g: 255, b: 127}),
-    steelblue: new Chromath({r: 70, g: 130, b: 180}),
-    tan: new Chromath({r: 210, g: 180, b: 140}),
-    thistle: new Chromath({r: 216, g: 191, b: 216}),
-    tomato: new Chromath({r: 255, g: 99, b: 71}),
-    turquoise: new Chromath({r: 64, g: 224, b: 208}),
-    violet: new Chromath({r: 238, g: 130, b: 238}),
-    wheat: new Chromath({r: 245, g: 222, b: 179}),
-    whitesmoke: new Chromath({r: 245, g: 245, b: 245}),
-    yellowgreen: new Chromath({r: 154, g: 205, b: 50})
-};
-
-//Group: Other Static Methods
-/*
-  Method: Chromath.parse
-  Iterate through the objects set in Chromath.parsers and, if a match is made, return the value specified by the matching parsers `process` function
-
-  Parameters:
-  string - The string to parse
-
-  Example:
-  > > Chromath.parse('rgb(0, 128, 255)')
-  > { r: 0, g: 128, b: 255, a: undefined }
- */
-Chromath.parse = function (string)
-{
-    var parsers = Chromath.parsers, i, l, parser, parts, channels;
-
-    for (i = 0, l = parsers.length; i < l; i++) {
-        parser = parsers[i];
-        parts = parser.regex.exec(string);
-        if (parts && parts.length) channels = parser.process.apply(this, parts);
-        if (channels) return channels;
     }
 };
 
