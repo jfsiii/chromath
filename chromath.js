@@ -935,24 +935,26 @@ Chromath.overlay = function (top, bottom, opacity)
   from - The starting color
   to - The destination color
   by - The percentage, expressed as a floating number between 0 and 1, to move towards the destination color
+  interpolator - The function to use for interpolating between the two points. Defaults to Linear Interpolation. Function has the signature `(from, to, by)` with the parameters having the same meaning as those in `towards`.
 
   > > Chromath.towards('red', 'yellow', 0.5).toString()
   > "#FF7F00"
 */
-Chromath.towards = function (from, to, by)
+Chromath.towards = function (from, to, by, interpolator)
 {
     if (!to) { return from; }
     if (!isFinite(by))
         throw new Error('TypeError: `by`(' + by  +') should be between 0 and 1');
     if (!(from instanceof Chromath)) from = new Chromath(from);
     if (!(to instanceof Chromath)) to = new Chromath(to || '#FFFFFF');
+    if (!interpolator) interpolator = lerp;
     by = parseFloat(by);
 
     return new Chromath({
-        r: lerp(from.r, to.r, by),
-        g: lerp(from.g, to.g, by),
-        b: lerp(from.b, to.b, by),
-        a: lerp(from.a, to.a, by)
+        r: interpolator(from.r, to.r, by),
+        g: interpolator(from.g, to.g, by),
+        b: interpolator(from.b, to.b, by),
+        a: interpolator(from.a, to.a, by)
     });
 };
 
@@ -2136,7 +2138,7 @@ function lpad( val, len, pad )
     return val;
 }
 
-function lerp (from, to, by)
+function lerp(from, to, by)
 {
     return from + (to-from) * by;
 }
