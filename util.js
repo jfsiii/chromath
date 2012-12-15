@@ -44,4 +44,50 @@ util.lerp = function (from, to, by) {
     return from + (to-from) * by;
 };
 
+util.rgb = {
+    fromArgs: function (r, g, b, a) {
+        var rgb = arguments[0];
+
+        if (util.isArray(rgb)){ r=rgb[0]; g=rgb[1]; b=rgb[2]; a=rgb[3]; }
+        if (util.isObject(rgb)){ r=rgb.r; g=rgb.g; b=rgb.b; a=rgb.a;  }
+
+        return [r, g, b, a];
+    },
+    scaled01: function (r, g, b) {
+        if (!isFinite(arguments[1])){
+            var rgb = util.rgb.fromArgs(r, g, b);
+            r = rgb[0], g = rgb[1], b = rgb[2];
+        }
+
+        if (r > 1) r /= 255;
+        if (g > 1) g /= 255;
+        if (b > 1) b /= 255;
+
+        return [r, g, b];
+    }
+};
+
+util.hsl = {
+    fromArgs: function (h, s, l, a) {
+        var hsl = arguments[0];
+
+        if (util.isArray(hsl)){ h=hsl[0]; s=hsl[1]; l=hsl[2]; a=hsl[3]; }
+        if (util.isObject(hsl)){ h=hsl.h; s=hsl.s; l=(hsl.l || hsl.v); a=hsl.a; }
+
+        return [h, s, l, a];
+    },
+    scaled: function (h, s, l) {
+        if (!isFinite(arguments[1])){
+            var hsl = util.hsl.fromArgs(h, s, l);
+            h = hsl[0], s = hsl[1], l = hsl[2];
+        }
+
+        h = (((h % 360) + 360) % 360);
+        if (s > 1) s /= 100;
+        if (l > 1) l /= 100;
+
+        return [h, s, l];
+    }
+};
+
 module.exports = util;

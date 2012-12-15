@@ -75,17 +75,17 @@ function Chromath( mixed )
         channels.a = 1;
 
     if ('r' in channels ){
-        rgb = rgbFraction([channels.r, channels.g, channels.b]);
+        rgb = util.rgb.scaled01([channels.r, channels.g, channels.b]);
         hsl = Chromath.rgb2hsl(rgb);
         hsv = Chromath.rgb2hsv(rgb);
     } else if ('h' in channels ){
         if ('l' in channels){
-            hsl = hslFraction([channels.h, channels.s, channels.l]);
+            hsl = util.hsl.scaled([channels.h, channels.s, channels.l]);
             rgb = Chromath.hsl2rgb(hsl);
             hsv = Chromath.rgb2hsv(rgb);
         } else if ('v' in channels || 'b' in channels) {
             if ('b' in channels) channels.v = channels.b;
-            hsv = hslFraction([channels.h, channels.s, channels.v]);
+            hsv = util.hsl.scaled([channels.h, channels.s, channels.v]);
             rgb = Chromath.hsv2rgb(hsv);
             hsl = Chromath.rgb2hsl(rgb);
         }
@@ -126,7 +126,7 @@ function Chromath( mixed )
  */
 Chromath.rgb = function (r, g, b, a)
 {
-    var rgba = args2rgb(r, g, b, a);
+    var rgba = util.rgb.fromArgs(r, g, b, a);
     r = rgba[0], g = rgba[1], b = rgba[2], a = rgba[3];
 
     return new Chromath({r: r, g: g, b: b, a: a});
@@ -163,7 +163,7 @@ Chromath.rgba = Chromath.rgb;
  */
 Chromath.hsl = function (h, s, l, a)
 {
-    var hsla = args2hsl(h, s, l, a);
+    var hsla = util.hsl.fromArgs(h, s, l, a);
     h = hsla[0], s = hsla[1], l = hsla[2], a = hsla[3];
 
     return new Chromath({h: h, s: s, l: l, a: a});
@@ -200,7 +200,7 @@ Chromath.hsla = Chromath.hsl;
  */
 Chromath.hsv = function (h, s, v, a)
 {
-    var hsva = args2hsl(h, s, v, a);
+    var hsva = util.hsl.fromArgs(h, s, v, a);
     h = hsva[0], s = hsva[1], v = hsva[2], a = hsva[3];
 
     return new Chromath({h: h, s: s, v: v, a: a});
@@ -283,7 +283,7 @@ Chromath.toName = function (comparison)
  */
 Chromath.rgb2hex = function rgb2hex(r, g, b)
 {
-    var rgb = rgbFraction(r, g, b);
+    var rgb = util.rgb.scaled01(r, g, b);
     r = rgb[0], g = rgb[1], b = rgb[2];
 
     var dec = Chromath.toInteger({r:r, g:g, b:b});
@@ -315,7 +315,7 @@ Chromath.rgb2hex = function rgb2hex(r, g, b)
  */
 Chromath.rgb2hsl = function rgb2hsl(r, g, b)
 {
-    var rgb = rgbFraction(r, g, b);
+    var rgb = util.rgb.scaled01(r, g, b);
     r = rgb[0], g = rgb[1], b = rgb[2];
 
     var M = Math.max(r, g, b);
@@ -358,7 +358,7 @@ Chromath.rgb2hsl = function rgb2hsl(r, g, b)
  */
 Chromath.rgb2hsv = function rgb2hsv(r, g, b)
 {
-    var rgb = rgbFraction(r, g, b);
+    var rgb = util.rgb.scaled01(r, g, b);
     r = rgb[0], g = rgb[1], b = rgb[2];
 
     var M = Math.max(r, g, b);
@@ -409,7 +409,7 @@ Chromath.rgb2hsb = Chromath.rgb2hsv;
 // TODO: Can I %= hp and then do a switch?
 Chromath.hsl2rgb = function hsl2rgb(h, s, l)
 {
-    var hsl = hslFraction(h, s, l);
+    var hsl = util.hsl.scaled(h, s, l);
     h=hsl[0], s=hsl[1], l=hsl[2];
 
     var C = (1 - Math.abs(2*l-1)) * s;
@@ -457,7 +457,7 @@ Chromath.hsl2rgb = function hsl2rgb(h, s, l)
  */
 Chromath.hsv2rgb = function hsv2rgb(h, s, v)
 {
-    var hsv = hslFraction(h, s, v);
+    var hsv = util.hsl.scaled(h, s, v);
     h=hsv[0], s=hsv[1], v=hsv[2];
 
     var C = v * s;
@@ -1837,54 +1837,6 @@ function expose(namespace, api)
     }
 
     return env;
-}
-
-function args2rgb(r, g, b, a)
-{
-    var rgb = arguments[0];
-
-    if (util.isArray(rgb)){ r=rgb[0]; g=rgb[1]; b=rgb[2]; a=rgb[3]; }
-    if (util.isObject(rgb)){ r=rgb.r; g=rgb.g; b=rgb.b; a=rgb.a;  }
-
-    return [r, g, b, a];
-}
-
-function args2hsl(h, s, l, a)
-{
-    var hsl = arguments[0];
-
-    if (util.isArray(hsl)){ h=hsl[0]; s=hsl[1]; l=hsl[2]; a=hsl[3]; }
-    if (util.isObject(hsl)){ h=hsl.h; s=hsl.s; l=(hsl.l || hsl.v); a=hsl.a; }
-
-    return [h, s, l, a];
-}
-
-function rgbFraction(r, g, b)
-{
-    if (!isFinite(arguments[1])){
-        var rgb = args2rgb(r, g, b);
-        r = rgb[0], g = rgb[1], b = rgb[2];
-    }
-
-    if (r > 1) r /= 255;
-    if (g > 1) g /= 255;
-    if (b > 1) b /= 255;
-
-    return [r, g, b];
-}
-
-function hslFraction(h, s, l)
-{
-    if (!isFinite(arguments[1])){
-        var hsl = args2hsl(h, s, l);
-        h = hsl[0], s = hsl[1], l = hsl[2];
-    }
-
-    h = (((h % 360) + 360) % 360);
-    if (s > 1) s /= 100;
-    if (l > 1) l /= 100;
-
-    return [h, s, l];
 }
 
 })();
