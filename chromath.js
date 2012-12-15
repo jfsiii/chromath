@@ -1132,10 +1132,10 @@ Chromath.parsers = [
         regex: /^rgba*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
         process: function (s,r,g,b,a)
         {
-            r = r && r.slice(-1) == '%' ? Math.round(r.slice(0,-1) * 2.55) : r*1;
-            g = g && g.slice(-1) == '%' ? Math.round(g.slice(0,-1) * 2.55) : g*1;
-            b = b && b.slice(-1) == '%' ? Math.round(b.slice(0,-1) * 2.55) : b*1;
-            a = a && a.slice(-1) == '%' ? Math.round(a.slice(0,-1) * 100) : a*1;
+            r = r && r.slice(-1) == '%' ? (r.slice(0,-1) / 100) : r*1;
+            g = g && g.slice(-1) == '%' ? (g.slice(0,-1) / 100) : g*1;
+            b = b && b.slice(-1) == '%' ? (b.slice(0,-1) / 100) : b*1;
+            a = a*1;
 
             return {
                 r: clamp(r, 0, 255),
