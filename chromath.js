@@ -277,6 +277,20 @@ Chromath.toName = function (comparison)
 };
 
 // Group: Static methods - color conversion
+Chromath.convert = {
+  rgb: {
+    hex: rgb2hex,
+    hsl: rgb2hsl,
+    hsv: rgb2hsv
+  },
+  hsl: {
+    rgb: hsl2rgb
+  },
+  hsv: {
+    rgb: hsv2rgb
+  }
+};
+
 /*
   Method: Chromath.rgb2hex
   Convert an RGB value to a Hex value
@@ -288,7 +302,7 @@ Chromath.toName = function (comparison)
   > > Chromath.rgb2hex(50, 100, 150)
   > "#326496"
  */
-Chromath.rgb2hex = function (r, g, b)
+Chromath.rgb2hex = function rgb2hex(r, g, b)
 {
     var dec = Chromath.toInteger({r:r, g:g, b:b});
     var hex = dec.toString(16).toUpperCase();
@@ -317,7 +331,7 @@ Chromath.rgb2hex = function (r, g, b)
   > > Chromath.rgb2hsl({r: 255, g: 0, b: 0});
   > [ 0, 1, 0.5 ]
  */
-Chromath.rgb2hsl = function (r, g, b)
+Chromath.rgb2hsl = function rgb2hsl(r, g, b)
 {
     var rgb = rgbFraction(r, g, b);
     r = rgb[0], g = rgb[1], b = rgb[2];
@@ -360,7 +374,7 @@ Chromath.rgb2hsl = function (r, g, b)
   > > Chromath.rgb2hsv({r: 255, g: 0, b: 0});
   > [ 0, 1, 1 ]
  */
-Chromath.rgb2hsv = function (r, g, b)
+Chromath.rgb2hsv = function rgb2hsv(r, g, b)
 {
     var rgb = rgbFraction(r, g, b);
     r = rgb[0], g = rgb[1], b = rgb[2];
@@ -411,7 +425,7 @@ Chromath.rgb2hsb = Chromath.rgb2hsv;
   > [ 0, 127.5, 255 ]
  */
 // TODO: Can I %= hp and then do a switch?
-Chromath.hsl2rgb = function (h, s, l)
+Chromath.hsl2rgb = function hsl2rgb(h, s, l)
 {
     var hsl = hslFraction(h, s, l);
     h=hsl[0], s=hsl[1], l=hsl[2];
@@ -459,7 +473,7 @@ Chromath.hsl2rgb = function (h, s, l)
   > > Chromath.hsv2rgb({h: 210, s: 0.5, v: 1});
   > [ 127.5, 191.25, 255 ]
  */
-Chromath.hsv2rgb = function (h, s, v)
+Chromath.hsv2rgb = function hsv2rgb(h, s, v)
 {
     var hsv = hslFraction(h, s, v);
     h=hsv[0], s=hsv[1], v=hsv[2];
