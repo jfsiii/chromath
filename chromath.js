@@ -74,36 +74,28 @@ function Chromath( mixed )
         channels.a = 1;
 
     if ('r' in channels ){
-        rgb = [channels.r, channels.g, channels.b];
+        rgb = rgbFraction([channels.r, channels.g, channels.b]);
         hsl = Chromath.rgb2hsl(rgb);
         hsv = Chromath.rgb2hsv(rgb);
     } else if ('h' in channels ){
         if ('l' in channels){
-            hsl = [channels.h, channels.s, channels.l];
+            hsl = hslFraction([channels.h, channels.s, channels.l]);
             rgb = Chromath.hsl2rgb(hsl);
             hsv = Chromath.rgb2hsv(rgb);
         } else if ('v' in channels || 'b' in channels) {
             if ('b' in channels) channels.v = channels.b;
-            hsv = [channels.h, channels.s, channels.v];
+            hsv = hslFraction([channels.h, channels.s, channels.v]);
             rgb = Chromath.hsv2rgb(hsv);
             hsl = Chromath.rgb2hsl(rgb);
         }
     }
 
-    merge(this, {r: rgb[0],  g: rgb[1], b: rgb[2],
-                 h: hsl[0], sl: hsl[1], l: hsl[2],
-                 sv: hsv[1], v: hsv[2], a: channels.a
-                });
 
-    this.h = (((this.h % 360) + 360) % 360); // [0-360]
-    if (this.sl > 1) this.sl /= 100;         // [0-1]
-    if (this.sv > 1) this.sv /= 100;         // [0-1]
-    if (this.l > 1) this.l /= 100;           // [0-1]
-
-    this.r = clamp(parseInt(this.r, 10), 0, 255);
-    this.g = clamp(parseInt(this.g, 10), 0 ,255);
-    this.b = clamp(parseInt(this.b, 10), 0, 255);
-    this.a = clamp(this.a, 0, 1);
+    merge(this, {
+        r:  rgb[0],  g: rgb[1], b: rgb[2],
+        h:  hsl[0], sl: hsl[1], l: hsl[2],
+        sv: hsv[1],  v: hsv[2], a: channels.a
+    });
 
     return this;
 }
