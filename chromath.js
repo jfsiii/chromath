@@ -430,9 +430,9 @@ Chromath.hsl2rgb = function hsl2rgb(h, s, l)
     m = l - (C/2);
 
     return [
-        (rgb[0]+m)*255,
-        (rgb[1]+m)*255,
-        (rgb[2]+m)*255
+        (rgb[0]+m),
+        (rgb[1]+m),
+        (rgb[2]+m)
     ];
 };
 
@@ -476,9 +476,9 @@ Chromath.hsv2rgb = function hsv2rgb(h, s, v)
     m = v - C;
 
     return [
-        (rgb[0]+m)*255,
-        (rgb[1]+m)*255,
-        (rgb[2]+m)*255
+        (rgb[0]+m),
+        (rgb[1]+m),
+        (rgb[2]+m)
     ];
 };
 
@@ -1179,9 +1179,9 @@ Chromath.prototype = {
     */
     toRGBAArray: function ()
     {
-        var rgba = [Math.round(this.r),
-                    Math.round(this.g),
-                    Math.round(this.b),
+        var rgba = [Math.round(this.r * 255),
+                    Math.round(this.g * 255),
+                    Math.round(this.b * 255),
                     parseFloat(this.a)];
 
         return rgba;
