@@ -304,6 +304,9 @@ Chromath.convert = {
  */
 Chromath.rgb2hex = function rgb2hex(r, g, b)
 {
+    var rgb = rgbFraction(r, g, b);
+    r = rgb[0], g = rgb[1], b = rgb[2];
+
     var dec = Chromath.toInteger({r:r, g:g, b:b});
     var hex = dec.toString(16).toUpperCase();
 
