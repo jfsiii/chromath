@@ -486,7 +486,7 @@ Chromath.hsv2rgb = function hsv2rgb(h, s, v)
     var X = C*(1-Math.abs(hp%2-1));
     var rgb, m;
 
-    if (h == undefined) rgb = [0,0,0]
+    if (h == undefined)         rgb = [0,0,0];
     else if (0 <= hp && hp < 1) rgb = [C,X,0];
     else if (1 <= hp && hp < 2) rgb = [X,C,0];
     else if (2 <= hp && hp < 3) rgb = [0,C,X];
@@ -1009,7 +1009,7 @@ Chromath.gradient = function (from, to, slices, slice)
     else slice = -1;
 
     while (++slice < slices){
-        gradient.push(Chromath.towards(from, to, slice/stops))
+        gradient.push(Chromath.towards(from, to, slice/stops));
     }
 
     return gradient;
