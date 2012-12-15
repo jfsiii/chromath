@@ -1,4 +1,5 @@
 (function () {
+var util = require('./util');
 /*
    Class: Chromath
 */
@@ -755,7 +756,7 @@ Chromath.desaturate = function (color, formula)
         avg = c.r * .3 + c.g * .59 + c.b * .11;
     }
 
-    avg = clamp(avg, 0, 255);
+    avg = util.clamp(avg, 0, 255);
     rgb = {r: avg, g: avg, b: avg};
 
     return new Chromath(rgb);
@@ -932,7 +933,7 @@ Chromath.overlay = function (top, bottom, opacity)
     var b = new Chromath(bottom);
 
     if (opacity > 1) opacity /= 100;
-    opacity = clamp(opacity - 1 + b.a, 0, 1);
+    opacity = util.clamp(opacity - 1 + b.a, 0, 1);
 
     return new Chromath({r: lerp(a.r, b.r, opacity),
                       g: lerp(a.g, b.g, opacity),
@@ -1087,91 +1088,7 @@ Chromath.parsers = [
    }
 (end code)
  */
-Chromath.parsers = [
-    {
-        example: ['red', 'burlywood'],
-        regex: /^[a-z]+$/i,
-        process: function (name){
-            if (Chromath.colors[name]) return Chromath.colors[name];
-        }
-    },
-    {
-        example: [3554431, 16809984],
-        regex: /^\d+$/,
-        process: function (color){
-            return {
-                //a: color >> 24 & 255,
-                r: color >> 16 & 255,
-                g: color >> 8 & 255,
-                b: color & 255
-            };
-        }
-    },
-
-    {
-        example: ['#fb0', 'f0f'],
-        regex: /^#?([\dA-F]{1})([\dA-F]{1})([\dA-F]{1})$/i,
-        process: function (hex, r, g, b){
-            return {
-                r: parseInt(r + r, 16),
-                g: parseInt(g + g, 16),
-                b: parseInt(b + b, 16)
-            };
-        }
-    },
-
-    {
-        example: ['#00ff00', '336699'],
-        regex: /^#?([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})$/i,
-        process: function (hex, r, g, b){
-            return {
-                r: parseInt(r, 16),
-                g: parseInt(g, 16),
-                b: parseInt(b, 16)
-            };
-        }
-    },
-
-    {
-        example: ['rgb(123, 234, 45)', 'rgb(25, 50%, 100%)', 'rgba(12%, 34, 56%, 0.78)'],
-        regex: /^rgba*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
-        process: function (s,r,g,b,a)
-        {
-            r = r && r.slice(-1) == '%' ? (r.slice(0,-1) / 100) : r*1;
-            g = g && g.slice(-1) == '%' ? (g.slice(0,-1) / 100) : g*1;
-            b = b && b.slice(-1) == '%' ? (b.slice(0,-1) / 100) : b*1;
-            a = a*1;
-
-            return {
-                r: clamp(r, 0, 255),
-                g: clamp(g, 0, 255),
-                b: clamp(b, 0, 255),
-                a: clamp(a, 0, 1) || undefined
-            };
-        }
-    },
-
-    {
-        example: ['hsl(123, 34%, 45%)', 'hsla(25, 50%, 100%, 0.75)', 'hsv(12, 34%, 56%)'],
-        regex: /^hs([bvl])a*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
-        process: function (c,lv,h,s,l,a)
-        {
-            h *= 1;
-            s = s.slice(0,-1) / 100;
-            l = l.slice(0,-1) / 100;
-            a *= 1;
-
-            var obj = {
-                h: clamp(h, 0, 360),
-                s: clamp(s, 0, 1),
-                a: clamp(l, 0, 1)
-            };
-            obj[lv] = clamp(l, 0, 1);
-
-            return obj;
-        }
-    }
-];
+Chromath.parsers = require('./parsers').parsers;
 
 // Group: Instance methods - color representation
 Chromath.prototype = {
@@ -1857,8 +1774,17 @@ var css3Colors  = require('./colornames_css3');
 var allColors   = merge({}, html4Colors, css3Colors);
 Chromath.colors = {};
 for (var name in allColors) {
-  Chromath[name] = Chromath.colors[name] = new Chromath(allColors[name]);
+    // e.g., Chromath.wheat and Chromath.colors.wheat
+    Chromath[name] = Chromath.colors[name] = new Chromath(allColors[name]);
 }
+// add a parser for the color names
+Chromath.parsers.push({
+    example: ['red', 'burlywood'],
+    regex: /^[a-z]+$/i,
+    process: function (name){
+        if (Chromath.colors[name]) return Chromath.colors[name];
+    }
+});
 
 // provide `Chromath` for use in "regular" browser, CommonJS, AMD and NodeJS
 expose('Chromath', Chromath);
@@ -1983,13 +1909,6 @@ function isNumber( test ){
 
 function isObject( test ){
     return Object.prototype.toString.call(test) === '[object Object]';
-}
-
-function clamp( val, min, max )
-{
-    if (val > max) return max;
-    if (val < min) return min;
-    return val;
 }
 
 function lpad( val, len, pad )
