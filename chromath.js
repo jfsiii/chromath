@@ -935,9 +935,11 @@ Chromath.overlay = function (top, bottom, opacity)
     if (opacity > 1) opacity /= 100;
     opacity = util.clamp(opacity - 1 + b.a, 0, 1);
 
-    return new Chromath({r: lerp(a.r, b.r, opacity),
-                      g: lerp(a.g, b.g, opacity),
-                      b: lerp(a.b, b.b, opacity)});
+    return new Chromath({
+        r: lerp(a.r, b.r, opacity),
+        g: lerp(a.g, b.g, opacity),
+        b: lerp(a.b, b.b, opacity)
+    });
 };
 
 
