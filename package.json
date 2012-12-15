@@ -25,5 +25,8 @@
         "name" : "John Schulz",
         "url" : "http://JFSIII.org"
     },
+    "scripts": {
+        "test": "tap test/*.js"
+    },
     "license" : "MIT"
 }
