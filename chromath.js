@@ -31,7 +31,7 @@ new Chromath('#FF0000');                  // Hex (6 characters with hash)
 new Chromath('FF0000');                   // Hex (6 characters without hash)
 new Chromath('#F00');                     // Hex (3 characters with hash)
 new Chromath('F00');                      // Hex (3 characters without hash)
-new Chromath('red');                      // CSS/SVG Chromath name
+new Chromath('red');                      // CSS/SVG Color name
 new Chromath('rgb(255, 0, 0)');           // RGB via CSS
 new Chromath({r: 255, g: 0, b: 0});       // RGB via object
 new Chromath('rgba(255, 0, 0, 1)');       // RGBA via CSS
