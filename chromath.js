@@ -56,17 +56,17 @@ function Chromath( mixed )
 {
     var channels, color, hsl, hsv, rgb;
 
-    if (isString(mixed) || isNumber(mixed)) {
+    if (util.isString(mixed) || util.isNumber(mixed)) {
         channels = Chromath.parse(mixed);
-    } else if (isArray(mixed)){
+    } else if (util.isArray(mixed)){
         throw new Error('Unsure how to parse array `'+mixed+'`' +
                         ', please pass an object or CSS style ' +
                         'or try Chromath.rgb, Chromath.hsl, or Chromath.hsv'
                        );
     } else if (mixed instanceof Chromath) {
-        channels = merge({}, mixed);
-    } else if (isObject(mixed)){
-        channels = merge({}, mixed);
+        channels = util.merge({}, mixed);
+    } else if (util.isObject(mixed)){
+        channels = util.merge({}, mixed);
     }
 
     if (! channels)
@@ -92,7 +92,7 @@ function Chromath( mixed )
     }
 
 
-    merge(this, {
+    util.merge(this, {
         r:  rgb[0],  g: rgb[1], b: rgb[2],
         h:  hsl[0], sl: hsl[1], l: hsl[2],
         sv: hsv[1],  v: hsv[2], a: channels.a
@@ -289,7 +289,7 @@ Chromath.rgb2hex = function rgb2hex(r, g, b)
     var dec = Chromath.toInteger({r:r, g:g, b:b});
     var hex = dec.toString(16).toUpperCase();
 
-    return '#' + lpad(hex, 6, 0);
+    return '#' + util.lpad(hex, 6, 0);
 };
 
 // Converted from http://en.wikipedia.org/wiki/HSL_and_HSV#General_approach
@@ -936,9 +936,9 @@ Chromath.overlay = function (top, bottom, opacity)
     opacity = util.clamp(opacity - 1 + b.a, 0, 1);
 
     return new Chromath({
-        r: lerp(a.r, b.r, opacity),
-        g: lerp(a.g, b.g, opacity),
-        b: lerp(a.b, b.b, opacity)
+        r: util.lerp(a.r, b.r, opacity),
+        g: util.lerp(a.g, b.g, opacity),
+        b: util.lerp(a.b, b.b, opacity)
     });
 };
 
@@ -964,7 +964,7 @@ Chromath.towards = function (from, to, by, interpolator)
         throw new Error('TypeError: `by`(' + by  +') should be between 0 and 1');
     if (!(from instanceof Chromath)) from = new Chromath(from);
     if (!(to instanceof Chromath)) to = new Chromath(to || '#FFFFFF');
-    if (!interpolator) interpolator = lerp;
+    if (!interpolator) interpolator = util.lerp;
     by = parseFloat(by);
 
     return new Chromath({
@@ -1773,7 +1773,7 @@ Chromath.prototype = {
 */
 var html4Colors = require('./colornames_html4');
 var css3Colors  = require('./colornames_css3');
-var allColors   = merge({}, html4Colors, css3Colors);
+var allColors   = util.merge({}, html4Colors, css3Colors);
 Chromath.colors = {};
 for (var name in allColors) {
     // e.g., Chromath.wheat and Chromath.colors.wheat
@@ -1843,8 +1843,8 @@ function args2rgb(r, g, b, a)
 {
     var rgb = arguments[0];
 
-    if (isArray(rgb)){ r=rgb[0]; g=rgb[1]; b=rgb[2]; a=rgb[3]; }
-    if (isObject(rgb)){ r=rgb.r; g=rgb.g; b=rgb.b; a=rgb.a;  }
+    if (util.isArray(rgb)){ r=rgb[0]; g=rgb[1]; b=rgb[2]; a=rgb[3]; }
+    if (util.isObject(rgb)){ r=rgb.r; g=rgb.g; b=rgb.b; a=rgb.a;  }
 
     return [r, g, b, a];
 }
@@ -1853,8 +1853,8 @@ function args2hsl(h, s, l, a)
 {
     var hsl = arguments[0];
 
-    if (isArray(hsl)){ h=hsl[0]; s=hsl[1]; l=hsl[2]; a=hsl[3]; }
-    if (isObject(hsl)){ h=hsl.h; s=hsl.s; l=(hsl.l || hsl.v); a=hsl.a; }
+    if (util.isArray(hsl)){ h=hsl[0]; s=hsl[1]; l=hsl[2]; a=hsl[3]; }
+    if (util.isObject(hsl)){ h=hsl.h; s=hsl.s; l=(hsl.l || hsl.v); a=hsl.a; }
 
     return [h, s, l, a];
 }
@@ -1886,48 +1886,5 @@ function hslFraction(h, s, l)
 
     return [h, s, l];
 }
-
-// Could be pulled in from other modules
-function merge()
-{
-    var dest = arguments[0], i=1, source, prop;
-    while (source = arguments[i++])
-        for (prop in source) dest[prop] = source[prop];
-
-    return dest;
-}
-
-function isArray( test ){
-    return Object.prototype.toString.call(test) === '[object Array]';
-}
-
-function isString( test ){
-    return Object.prototype.toString.call(test) === '[object String]';
-}
-
-function isNumber( test ){
-    return Object.prototype.toString.call(test) === '[object Number]';
-}
-
-function isObject( test ){
-    return Object.prototype.toString.call(test) === '[object Object]';
-}
-
-function lpad( val, len, pad )
-{
-    val = val.toString();
-    if (!len) len = 2;
-    if (!pad) pad = '0';
-
-    while (val.length < len) val = pad+val;
-
-    return val;
-}
-
-function lerp(from, to, by)
-{
-    return from + (to-from) * by;
-}
-//////////////////////////////////////////
 
 })();
