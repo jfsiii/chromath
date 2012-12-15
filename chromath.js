@@ -269,20 +269,6 @@ Chromath.toName = function (comparison)
 };
 
 // Group: Static methods - color conversion
-Chromath.convert = {
-  rgb: {
-    hex: rgb2hex,
-    hsl: rgb2hsl,
-    hsv: rgb2hsv
-  },
-  hsl: {
-    rgb: hsl2rgb
-  },
-  hsv: {
-    rgb: hsv2rgb
-  }
-};
-
 /*
   Method: Chromath.rgb2hex
   Convert an RGB value to a Hex value
@@ -500,6 +486,25 @@ Chromath.hsv2rgb = function hsv2rgb(h, s, v)
    Alias for <Chromath.hsv2rgb>
  */
 Chromath.hsb2rgb = Chromath.hsv2rgb;
+
+/*
+    Property: Chromath.convert
+    Aliases for the Chromath.x2y functions.
+    Use like Chromath.convert[x][y](args) or Chromath.convert.x.y(args)
+*/
+Chromath.convert = {
+    rgb: {
+        hex: Chromath.hsv2rgb,
+        hsl: Chromath.rgb2hsl,
+        hsv: Chromath.rgb2hsv
+    },
+    hsl: {
+        rgb: Chromath.hsl2rgb
+    },
+    hsv: {
+        rgb: Chromath.hsv2rgb
+    }
+};
 
 /* Group: Static methods - color scheme */
 /*
