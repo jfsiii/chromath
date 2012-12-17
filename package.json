@@ -1,6 +1,6 @@
 {
     "name" : "chromath",
-    "version" : "0.0.1",
+    "version" : "0.0.2",
     "description" : "JavaScript color conversion and manipulation functions",
     "main" : "chromath.js",
     "repository" : {
@@ -27,6 +27,10 @@
     },
     "scripts": {
         "test": "tap test/*.js"
+    },
+    "devDependencies": {
+        "tap": "*",
+        "quickcheck": "git://github.com/jfsiii/node-quickcheck.git"
     },
     "license" : "MIT"
 }
