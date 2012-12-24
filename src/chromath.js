@@ -1228,7 +1228,7 @@ Chromath.prototype = {
       > ["B2", "22", "22"]
     */
     toHexArray: function (){
-        return this.toHexString().slice(1).match(/([\dA-F]{2})/ig);
+        return Chromath.rgb2hex(this.r, this.g, this.b);
     },
 
     /*
@@ -1251,7 +1251,9 @@ Chromath.prototype = {
       > "#F0FFF0"
     */
     toHexString: function (){
-        return Chromath.rgb2hex(this.r, this.g, this.b);
+        var hex = this.toHexArray();
+
+        return '#' + hex.join('');
     },
 
     /*
