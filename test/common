@@ -1,0 +1,148 @@
+var Chromath = require('..');
+var qc       = require('quickcheck');
+
+////////////////////////////////////////
+// data generators
+////////////////////////////////////////
+var arbHex = function arbHex() {
+    return (Math.floor(Math.random() * 16)).toString(16);
+};
+
+var arbHex2 = function arbHex2() {
+    return arbHex() + arbHex();
+};
+
+var arbHexTriplet = function arbHexTriplet() {
+    return [
+        arbHex(),
+        arbHex(),
+        arbHex()
+    ];
+};
+
+var arbHex2Triplet = function arbHex2Triplet() {
+    return [
+        arbHex2(),
+        arbHex2(),
+        arbHex2()
+    ];
+};
+
+var arbByteTriplet = function arbByteTriplet() {
+    return [
+        qc.arbByte(),
+        qc.arbByte(),
+        qc.arbByte()
+    ];
+};
+
+var times = function times(n, fn, context) {
+    for (var i = 0, results = []; i < n; i++) {
+        results[i] = fn.call(context, i);
+    }
+    return results;
+};
+
+////////////////////////////////////////
+// test helpers
+////////////////////////////////////////
+var isChromath = function isChromath(color, t) {
+    var result = color instanceof Chromath;
+
+    if (t)
+        return t.ok(result, 'is a Chromath instance');
+    else
+        return result;
+};
+
+var hasChannels = function hasChannels(expected, actual, t) {
+    var result = expected.every(function (channel) {
+        return channel in actual;
+    });
+
+    if (t)
+        t.ok(result, 'has properties ' + expected);
+    else
+        return result;
+};
+
+var isLikeRGB = function isLikeRGB(channels, t) {
+    var expected = ['r', 'g', 'b'];
+    var result   = hasChannels(expected, channels, t);
+
+    if (!t) return result;
+};
+
+var isLikeRGBA = function isLikeRGBA(channels, t) {
+    var expected = ['r', 'g', 'b', 'a'];
+    var result   = hasChannels(expected, channels, t);
+
+    if (!t) return result;
+};
+
+var isLikeHSL = function isLikeHSL(channels, t) {
+    var expected = ['h', 's', 'l'];
+    var result   = hasChannels(expected, channels, t);
+
+    if (!t) return result;
+};
+
+var isLikeHSLA = function isLikeHSLA(channels, t) {
+    var expected = ['h', 's', 'l', 'a'];
+    var result   = hasChannels(expected, channels, t);
+
+    if (!t) return result;
+};
+
+var isLikeHSV = function isLikeHSV(channels, t) {
+    var expected = ['h', 's', 'v'];
+    var result   = hasChannels(expected, channels, t);
+
+    if (!t) return result;
+};
+
+var isLikeHSVA = function isLikeHSV(channels, t) {
+    var expected = ['h', 's', 'v', 'a'];
+    var result   = hasChannels(expected, channels, t);
+
+    if (!t) return result;
+};
+
+var isLikeColor = function isLikeColor(channels, t) {
+    var result = isLikeRGB(channels) || isLikeHSL(channels) || isLikeHSV(channels);
+
+    if (t)
+        return t.ok(result, 'is probably a color');
+    else
+        return result;
+};
+
+var cssFunctionString = function cssFunctionString(fnName, parts) {
+    return fnName + '(' + parts.join(', ') + ')';
+};
+
+
+module.exports = {
+    times: times,
+    css: {
+        rgb  : function (parts) { return cssFunctionString('rgb', parts); },
+        rgba : function (parts) { return cssFunctionString('rgba', parts); },
+        hsl  : function (parts) { return cssFunctionString('hsl', parts); },
+        hsla : function (parts) { return cssFunctionString('hsla', parts); }
+    },
+    generators: {
+        arbHex         : arbHex,
+        arbHex2        : arbHex2,
+        arbHexTriplet  : arbHexTriplet,
+        arbHex2Triplet : arbHex2Triplet,
+        arbByteTriplet : arbByteTriplet
+    },
+    tests: {
+        isChromath  : isChromath,
+        isLikeColor : isLikeColor,
+        isLikeRGB   : isLikeRGB,
+        isLikeRGBA  : isLikeRGBA,
+        isLikeHSL   : isLikeHSL,
+        isLikeHSLA  : isLikeHSLA
+    }
+};
