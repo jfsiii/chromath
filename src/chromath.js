@@ -585,8 +585,8 @@ Chromath.tetrad = function (color)
 
   Parameters:
   mixed - Any argument which is passed to <Chromath>
-  results - default = 8
-  slices - default = 30
+  results - How many colors to return (default = 3)
+  slices - How many pieces are in the color wheel (default = 12)
 
   Examples:
   > > Chromath.analogous(new Chromath('rgb(0, 255, 255)'))
@@ -604,18 +604,17 @@ Chromath.tetrad = function (color)
  */
 Chromath.analogous = function (color, results, slices)
 {
-    if (!isFinite(results)) results = 8;
-    if (!isFinite(slices)) slices = 30;
+    if (!isFinite(results)) results = 3;
+    if (!isFinite(slices)) slices = 12;
 
     var c = new Chromath(color);
     var hsv = c.toHSVObject();
     var slice = 360 / slices;
     var ret = [ c ];
 
-    hsv.h = ((hsv.h - (slice * results >> 1)) + 720) % 360;
+    hsv.h = ((hsv.h - (slices * results >> 1)) + 720) % 360;
     while (--results) {
-        hsv.h += slice;
-        hsv.h %= 360;
+        hsv.h = (hsv.h + slice) % 360;
         ret.push(new Chromath(hsv));
     }
 
