@@ -64,6 +64,13 @@ util.rgb = {
         if (b > 1) b /= 255;
 
         return [r, g, b];
+    },
+    pctWithSymbol: function (r, g, b) {
+        var rgb = this.scaled01(r, g, b);
+
+        return rgb.map(function (v) {
+            return Math.round(v * 255) + '%';
+        });
     }
 };
 

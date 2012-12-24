@@ -28,12 +28,41 @@ var arbHex2Triplet = function arbHex2Triplet() {
     ];
 };
 
-var arbByteTriplet = function arbByteTriplet() {
+var arbPct01 = function arbPct01() {
+    return Number(Math.random().toFixed(2));
+};
+
+var arbRGB = function arbRGB() {
     return [
         qc.arbByte(),
         qc.arbByte(),
         qc.arbByte()
     ];
+};
+
+var arbRGBA = function arbRGBA() {
+    var rgb  = arbRGB();
+    var a    = arbPct01();
+    var rgba = rgb.concat(a);
+
+    return rgba;
+};
+
+var arbHSL = function arbHSL() {
+
+    return [
+        qc.arbIntBetween(0, 360),
+        qc.arbIntBetween(0, 100) + '%',
+        qc.arbIntBetween(0, 100) + '%'
+    ];
+};
+
+var arbHSLA = function arbHSLA() {
+    var hsl  = arbHSL();
+    var a    = arbPct01();
+    var hsla = hsl.concat(a);
+
+    return hsla;
 };
 
 var times = function times(n, fn, context) {
@@ -131,11 +160,16 @@ module.exports = {
         hsla : function (parts) { return cssFunctionString('hsla', parts); }
     },
     generators: {
+        arbPct01       : arbPct01,
         arbHex         : arbHex,
         arbHex2        : arbHex2,
         arbHexTriplet  : arbHexTriplet,
         arbHex2Triplet : arbHex2Triplet,
-        arbByteTriplet : arbByteTriplet
+        arbRGB         : arbRGB,
+        arbRGBA        : arbRGBA,
+        arbHSL         : arbHSL,
+        arbHSLA        : arbHSLA
+
     },
     tests: {
         isChromath  : isChromath,
