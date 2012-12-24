@@ -44,6 +44,13 @@ util.lerp = function (from, to, by) {
     return from + (to-from) * by;
 };
 
+util.times = function (n, fn, context) {
+    for (var i = 0, results = []; i < n; i++) {
+        results[i] = fn.call(context, i);
+    }
+    return results;
+};
+
 util.rgb = {
     fromArgs: function (r, g, b, a) {
         var rgb = arguments[0];

@@ -1,9 +1,10 @@
 var Chromath = require('..');
 var test     = require('tap').test;
 var common   = require('./common');
+var util     = require('../src/util');
 
 test('constructor accepts HSL arguments', function (t) {
-    common.times(100, common.generators.arbHSLA).forEach(function (hsla) {
+    util.times(100, common.generators.arbHSLA).forEach(function (hsla) {
         // HSL
         var h = hsla[0];
         var s = hsla[1];

@@ -1,6 +1,7 @@
 var Chromath = require('..');
 var test     = require('tap').test;
 var common   = require('./common');
+var util     = require('../src/util');
 
 ////////////////////////////////////////
 // the tests
@@ -36,7 +37,7 @@ test('constructor should error on bad input', function (t) {
 
 test('constructor accepts hex arguments', function (t) {
 
-    common.times(100, common.generators.arbHex2Triplet).forEach(function (hexTriplet) {
+    util.times(100, common.generators.arbHex2Triplet).forEach(function (hexTriplet) {
 
         var r    = hexTriplet[0];
         var g    = hexTriplet[1];
@@ -58,7 +59,7 @@ test('constructor accepts hex arguments', function (t) {
         }, '6 hex characters without a hash');
     });
 
-    common.times(100, common.generators.arbHexTriplet).forEach(function (hexTriplet) {
+    util.times(100, common.generators.arbHexTriplet).forEach(function (hexTriplet) {
         var hex3 = hexTriplet.join('');
         // Hex (3 characters with hash)
         t.doesNotThrow(function () {

@@ -65,13 +65,6 @@ var arbHSLA = function arbHSLA() {
     return hsla;
 };
 
-var times = function times(n, fn, context) {
-    for (var i = 0, results = []; i < n; i++) {
-        results[i] = fn.call(context, i);
-    }
-    return results;
-};
-
 ////////////////////////////////////////
 // test helpers
 ////////////////////////////////////////
@@ -152,7 +145,6 @@ var cssFunctionString = function cssFunctionString(fnName, parts) {
 
 
 module.exports = {
-    times: times,
     css: {
         rgb  : function (parts) { return cssFunctionString('rgb', parts); },
         rgba : function (parts) { return cssFunctionString('rgba', parts); },

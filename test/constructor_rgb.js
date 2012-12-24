@@ -4,7 +4,7 @@ var common   = require('./common');
 var util     = require('../src/util');
 
 test('constructor accepts RGB arguments', function (t) {
-    common.times(100, common.generators.arbRGBA).forEach(function (aRGBA) {
+    util.times(100, common.generators.arbRGBA).forEach(function (aRGBA) {
         // RGB
         var r     = aRGBA[0];
         var g     = aRGBA[1];
