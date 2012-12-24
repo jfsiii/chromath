@@ -286,7 +286,7 @@ Chromath.rgb2hex = function rgb2hex(r, g, b)
     var rgb = util.rgb.scaled01(r, g, b);
     var hex = rgb.map(function (pct) {
       var dec = pct * 255;
-    var hex = dec.toString(16).toUpperCase();
+      var hex = dec.toString(16).toUpperCase();
       return util.lpad(hex, 2, 0);
     });
 
@@ -1182,10 +1182,12 @@ Chromath.prototype = {
     */
     toRGBAArray: function ()
     {
-        var rgba = [Math.round(this.r * 255),
-                    Math.round(this.g * 255),
-                    Math.round(this.b * 255),
-                    parseFloat(this.a)];
+        var rgba = [
+            Math.round(this.r*255),
+            Math.round(this.g*255),
+            Math.round(this.b*255),
+            parseFloat(this.a)
+        ];
 
         return rgba;
     },
@@ -1320,10 +1322,12 @@ Chromath.prototype = {
     */
     toHSLAArray: function ()
     {
-        return [Math.round(this.h),
-                parseFloat(this.sl),
-                parseFloat(this.l),
-                parseFloat(this.a)];
+        return [
+            Math.round(this.h),
+            parseFloat(this.sl),
+            parseFloat(this.l),
+            parseFloat(this.a)
+        ];
     },
 
     /*
@@ -1422,10 +1426,12 @@ Chromath.prototype = {
        > [60, 1, 0.5019607843137255, 1]
     */
     toHSVAArray: function (){
-        return [Math.round(this.h),
-                parseFloat(this.sv),
-                parseFloat(this.v),
-                parseFloat(this.a)];
+        return [
+            Math.round(this.h),
+            parseFloat(this.sv),
+            parseFloat(this.v),
+            parseFloat(this.a)
+        ];
     },
 
     /*
