@@ -70,9 +70,11 @@ module.exports = {
 
                 var obj = {
                     h: util.clamp(h, 0, 360),
-                    s: util.clamp(s, 0, 1),
                     a: util.clamp(l, 0, 1)
                 };
+                // `s` is used in many different spaces (HSL, HSV, HSB)
+                // so we use `sl`, `sv` and `sb` to differentiate
+                obj['s'+lv] = util.clamp(s, 0, 1),
                 obj[lv] = util.clamp(l, 0, 1);
 
                 return obj;

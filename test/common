@@ -81,28 +81,28 @@ var isLikeRGBA = function isLikeRGBA(channels, t) {
 };
 
 var isLikeHSL = function isLikeHSL(channels, t) {
-    var expected = ['h', 's', 'l'];
+    var expected = ['h', 'sl', 'l'];
     var result   = hasChannels(expected, channels, t);
 
     if (!t) return result;
 };
 
 var isLikeHSLA = function isLikeHSLA(channels, t) {
-    var expected = ['h', 's', 'l', 'a'];
+    var expected = ['h', 'sl', 'l', 'a'];
     var result   = hasChannels(expected, channels, t);
 
     if (!t) return result;
 };
 
 var isLikeHSV = function isLikeHSV(channels, t) {
-    var expected = ['h', 's', 'v'];
+    var expected = ['h', 'sv', 'v'];
     var result   = hasChannels(expected, channels, t);
 
     if (!t) return result;
 };
 
 var isLikeHSVA = function isLikeHSV(channels, t) {
-    var expected = ['h', 's', 'v', 'a'];
+    var expected = ['h', 'sv', 'v', 'a'];
     var result   = hasChannels(expected, channels, t);
 
     if (!t) return result;
