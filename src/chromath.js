@@ -273,22 +273,22 @@ Chromath.toName = function (comparison)
   Method: Chromath.rgb2hex
   Convert an RGB value to a Hex value
 
-  Returns:
-  string
+  Returns: array
 
   Example:
   > > Chromath.rgb2hex(50, 100, 150)
-  > "#326496"
+  > "[32, 64, 96]"
  */
 Chromath.rgb2hex = function rgb2hex(r, g, b)
 {
     var rgb = util.rgb.scaled01(r, g, b);
-    r = rgb[0], g = rgb[1], b = rgb[2];
-
-    var dec = Chromath.toInteger({r:r, g:g, b:b});
+    var hex = rgb.map(function (pct) {
+      var dec = pct * 255;
     var hex = dec.toString(16).toUpperCase();
+      return util.lpad(hex, 2, 0);
+    });
 
-    return '#' + util.lpad(hex, 6, 0);
+    return hex;
 };
 
 // Converted from http://en.wikipedia.org/wiki/HSL_and_HSV#General_approach
