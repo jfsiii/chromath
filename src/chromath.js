@@ -243,9 +243,11 @@ Chromath.hsba = Chromath.hsva;
 */
 Chromath.toInteger = function (color)
 {
-    var rgb = new Chromath(color).toRGBObject();
+    // create something like '008000' (green)
+    var hex6 = new Chromath(color).hex().join('');
 
-    return (rgb.b | rgb.g<<8 | rgb.r<<16);
+    // Arguments beginning with `0x` are treated as hex values
+    return Number('0x' + hex6);
 };
 
 /*
