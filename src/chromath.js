@@ -1386,7 +1386,7 @@ Chromath.prototype = {
     {
         var hsva = this.toHSVAArray();
 
-        return {h: hsva[0], s: hsva[1], l: hsva[2]};
+        return {h: hsva[0], s: hsva[1], v: hsva[2]};
     },
 
     /*
