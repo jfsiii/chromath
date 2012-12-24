@@ -1,4 +1,3 @@
-(function () {
 var util = require('./util');
 /*
    Class: Chromath
@@ -1289,7 +1288,10 @@ Chromath.prototype = {
        > "hsl(0,1,0.5)"
     */
     toHSLString: function (){
-        return 'hsl('+ this.toHSLArray().join(',') +')';
+        var hsla = this.toHSLAArray();
+        var vals = [hsla[0], hsla[1]*100+'%', hsla[2]*100+'%'];
+
+        return 'hsl('+ vals +')';
     },
 
     /*
@@ -1322,7 +1324,7 @@ Chromath.prototype = {
     */
     toHSLAObject: function ()
     {
-        var hsla = this.toHSLArray();
+        var hsla = this.toHSLAArray();
 
         return {h: hsla[0], s: hsla[1], l: hsla[2], a: hsla[3]};
     },
@@ -1334,7 +1336,10 @@ Chromath.prototype = {
        > "hsla(34,0.7777777777777773,0.9117647058823529,1)"
     */
     toHSLAString: function (){
-        return 'hsla('+ this.toHSLAArray().join(',') +')';
+        var hsla = this.toHSLAArray();
+        var vals = [hsla[0], hsla[1]*100+'%', hsla[2]*100+'%', hsla[3]];
+
+        return 'hsla('+ vals +')';
     },
 
     /*
@@ -1353,9 +1358,7 @@ Chromath.prototype = {
     */
     toHSVArray: function ()
     {
-        return [Math.round(this.h),
-                parseFloat(this.sv),
-                parseFloat(this.v)];
+        return this.toHSVAArray().slice(0,3);
     },
 
     /*
@@ -1366,9 +1369,9 @@ Chromath.prototype = {
     */
     toHSVObject: function ()
     {
-        return {h: Math.round(this.h),
-                s: parseFloat(this.sv),
-                v: parseFloat(this.v)};
+        var hsva = this.toHSVAArray();
+
+        return {h: hsva[0], s: hsva[1], l: hsva[2]};
     },
 
     /*
@@ -1771,72 +1774,21 @@ Chromath.prototype = {
   > > Chromath.beige.toString()
   > "#F5F5DC"
 */
-var html4Colors = require('./colornames_html4');
+var css2Colors  = require('./colornames_css2');
 var css3Colors  = require('./colornames_css3');
-var allColors   = util.merge({}, html4Colors, css3Colors);
+var allColors   = util.merge({}, css2Colors, css3Colors);
 Chromath.colors = {};
-for (var name in allColors) {
+for (var colorName in allColors) {
     // e.g., Chromath.wheat and Chromath.colors.wheat
-    Chromath[name] = Chromath.colors[name] = new Chromath(allColors[name]);
+    Chromath[colorName] = Chromath.colors[colorName] = new Chromath(allColors[colorName]);
 }
 // add a parser for the color names
 Chromath.parsers.push({
     example: ['red', 'burlywood'],
     regex: /^[a-z]+$/i,
-    process: function (name){
-        if (Chromath.colors[name]) return Chromath.colors[name];
+    process: function (colorName){
+        if (Chromath.colors[colorName]) return Chromath.colors[colorName];
     }
 });
 
-// provide `Chromath` for use in "regular" browser, CommonJS, AMD and NodeJS
-expose('Chromath', Chromath);
-
-/*!
- * expose.js
- *
- * @author Oleg Slobodskoi
- * @website https://github.com/kof/expose.js
- * @licence Dual licensed under the MIT or GPL Version 2 licenses.
- */
-/** @ignore */
-function expose(namespace, api)
-{
-    var env = {};
-
-    if (typeof namespace !== 'string') {
-        api = namespace;
-        namespace = null;
-    }
-
-    // the global api of any environment
-    // thanks to Nicholas C. Zakas
-    // http://www.nczonline.net/blog/2008/04/20/get-the-javascript-global/
-    env.global = (function (){
-        return this;
-    }).call(null);
-
-    // expose passed api as exports
-    env.exports = api || {};
-
-    // commonjs
-    if (typeof module !== 'undefined' &&
-        typeof exports !== 'undefined' &&
-        module.exports) {
-        env.commonjs = true;
-        env.module = module;
-        module.exports = exports = env.exports;
-    }
-
-    // browser only
-    if (typeof window !== 'undefined') {
-        env.browser = true;
-        // we are not in amd wrapper
-        if (!env.commonjs && namespace && env.exports) {
-            env.global[namespace] = env.exports;
-        }
-    }
-
-    return env;
-}
-
-})();
+module.exports = Chromath;

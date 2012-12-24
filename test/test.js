@@ -1,6 +1,6 @@
-var Chromath = require('../chromath');
+var Chromath = require('..');
 var test     = require('tap').test;
-var util     = require('../util');
+var util     = require('../src/util');
 var qc       = require('quickcheck');
 
 ////////////////////////////////////////
@@ -231,7 +231,7 @@ test('constructor accepts RGB arguments', function (t) {
 });
 
 test('can parse HTML4 color names', function (t) {
-    var colors = require('../colornames_html4');
+    var colors = require('../src/colornames_html4');
     var names  = Object.keys(colors);
 
     names.forEach(function (name) {
@@ -243,7 +243,7 @@ test('can parse HTML4 color names', function (t) {
 });
 
 test('can parse CSS3 color names', function (t) {
-    var colors = require('../colornames_css3');
+    var colors = require('../src/colornames_css3');
     var names  = Object.keys(colors);
 
     names.forEach(function (name) {
