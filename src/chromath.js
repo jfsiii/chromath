@@ -667,19 +667,22 @@ Chromath.monochromatic = function (color, results)
  */
 Chromath.splitcomplement = function (color)
 {
-    var c = new Chromath(color);
-    var hsv = c.toHSVObject();
-    var ret = [ c ];
+    var ref = new Chromath(color);
+    var hsv = ref.toHSVObject();
 
-    hsv.h *= 0.2;
-    hsv.h %= 360;
-    ret.push(new Chromath(hsv));
+    var a = new Chromath.hsv({
+        h: (hsv.h + 150) % 360,
+        s: hsv.s,
+        v: hsv.v
+    });
 
-    hsv.h *= 0.4;
-    hsv.h %= 360;
-    ret.push(new Chromath(hsv));
+    var b = new Chromath.hsv({
+        h: (hsv.h + 210) % 360,
+        s: hsv.s,
+        v: hsv.v
+    });
 
-    return ret;
+    return [ref, a, b];
 };
 
 //Group: Static methods - color alteration
