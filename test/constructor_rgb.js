@@ -42,7 +42,7 @@ test('constructor accepts RGB arguments', function (t) {
         t.doesNotThrow(function () {
             var color = new Chromath(cssRGBAAbsolute);
             common.tests.isChromath(color, t);
-            common.tests.isLikeRGB(color, t);
+            common.tests.isLikeRGBA(color, t);
         }, 'accepts rgba() with absolute values (like `rgba(123, 255, 55, 0.12)`)');
 
         var aRGBAPercentage   = aRGBPercentage.concat(a);
@@ -50,7 +50,7 @@ test('constructor accepts RGB arguments', function (t) {
         t.doesNotThrow(function () {
             var color = new Chromath(cssRGBAPercentage);
             common.tests.isChromath(color, t);
-            common.tests.isLikeRGB(color, t);
+            common.tests.isLikeRGBA(color, t);
         }, 'accepts rgba() with absolute values (like `rgba(123, 255, 55, 0.12)`)');
 
         // RGBA via object
