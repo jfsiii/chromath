@@ -1295,7 +1295,11 @@ Chromath.prototype = {
     */
     toHSLString: function (){
         var hsla = this.toHSLAArray();
-        var vals = [hsla[0], hsla[1]*100+'%', hsla[2]*100+'%'];
+        var vals = [
+            hsla[0],
+            Math.round(hsla[1]*100)+'%',
+            Math.round(hsla[2]*100)+'%'
+        ];
 
         return 'hsl('+ vals +')';
     },
@@ -1343,7 +1347,12 @@ Chromath.prototype = {
     */
     toHSLAString: function (){
         var hsla = this.toHSLAArray();
-        var vals = [hsla[0], hsla[1]*100+'%', hsla[2]*100+'%', hsla[3]];
+        var vals = [
+            hsla[0],
+            Math.round(hsla[1]*100)+'%',
+            Math.round(hsla[2]*100)+'%',
+            Math.round(hsla[3])
+        ];
 
         return 'hsla('+ vals +')';
     },
@@ -1389,7 +1398,11 @@ Chromath.prototype = {
     toHSVString: function ()
     {
         var hsv = this.toHSVArray();
-        var vals = [hsv[0], hsv[1]*100+'%', hsv[2]*100+'%'];
+        var vals = [
+            hsv[0],
+            Math.round(hsv[1]*100)+'%',
+            Math.round(hsv[2]*100)+'%'
+        ];
 
         return 'hsv('+ vals +')';
     },
@@ -1436,7 +1449,12 @@ Chromath.prototype = {
     toHSVAString: function ()
     {
         var hsva = this.toHSVAArray();
-        var vals = [hsva[0], hsva[1]*100+'%', hsva[2]*100+'%', hsva[3]];
+        var vals = [
+            hsva[0],
+            Math.round(hsva[1]*100)+'%',
+            Math.round(hsva[2]*100)+'%',
+            hsva[3]
+        ];
 
         return 'hsva('+ vals +')';
     },
