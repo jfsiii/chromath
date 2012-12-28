@@ -285,7 +285,7 @@ Chromath.rgb2hex = function rgb2hex(r, g, b)
 {
     var rgb = util.rgb.scaled01(r, g, b);
     var hex = rgb.map(function (pct) {
-      var dec = pct * 255;
+      var dec = Math.round(pct * 255);
       var hex = dec.toString(16).toUpperCase();
       return util.lpad(hex, 2, 0);
     });
