@@ -37,6 +37,18 @@ test('constructor accepts RGB arguments', function (t) {
             common.tests.isLikeRGB(color, t);
         }, 'accepts object values (like `{r: 123, g: 255, b: 55}`)');
 
+        // RGB via integer (alpha currently ignored)
+        t.doesNotThrow(function () {
+            var hexR    = util.lpad( (r).toString(16), 2, 0 );
+            var hexG    = util.lpad( (g).toString(16), 2, 0 );
+            var hexB    = util.lpad( (b).toString(16), 2, 0 );
+            var hex6    = (hexR + hexG + hexB).toUpperCase();
+            var integer = Number('0x' + hex6);
+            var color   = new Chromath(integer);
+            if (hex6 !== color.hex().join('')) console.log(r, g, b, hex6, integer);
+            t.equal(hex6, color.hex().join(''));
+        });
+
         // RGBA via CSS
         var cssRGBAAbsolute = common.css.rgba(aRGBA);
         t.doesNotThrow(function () {

@@ -65,6 +65,23 @@ var arbHSLA = function arbHSLA() {
     return hsla;
 };
 
+var arbHSV = function arbHSV() {
+
+    return [
+        qc.arbIntBetween(0, 360),
+        qc.arbIntBetween(0, 100) + '%',
+        qc.arbIntBetween(0, 100) + '%'
+    ];
+};
+
+var arbHSVA = function arbHSVA() {
+    var hsv  = arbHSV();
+    var a    = arbPct01();
+    var hsva = hsv.concat(a);
+
+    return hsva;
+};
+
 ////////////////////////////////////////
 // test helpers
 ////////////////////////////////////////
@@ -143,32 +160,46 @@ var cssFunctionString = function cssFunctionString(fnName, parts) {
     return fnName + '(' + parts.join(', ') + ')';
 };
 
+//////////////////////////////
 
-module.exports = {
-    css: {
-        rgb  : function (parts) { return cssFunctionString('rgb', parts); },
-        rgba : function (parts) { return cssFunctionString('rgba', parts); },
-        hsl  : function (parts) { return cssFunctionString('hsl', parts); },
-        hsla : function (parts) { return cssFunctionString('hsla', parts); }
-    },
-    generators: {
-        arbPct01       : arbPct01,
-        arbHex         : arbHex,
-        arbHex2        : arbHex2,
-        arbHexTriplet  : arbHexTriplet,
-        arbHex2Triplet : arbHex2Triplet,
-        arbRGB         : arbRGB,
-        arbRGBA        : arbRGBA,
-        arbHSL         : arbHSL,
-        arbHSLA        : arbHSLA
+module.exports.css = {};
+['rgb', 'rgba',
+ 'hsl', 'hsla',
+ 'hsv', 'hsva',
+ 'hsb', 'hsba'
+].forEach(function (fnName) {
+    module.exports.css[fnName] = (function (fnName) {
+        return function (parts) {
+            return cssFunctionString('rgb', parts);
+        };
+    })(fnName);
+});
 
-    },
-    tests: {
-        isChromath  : isChromath,
-        isLikeColor : isLikeColor,
-        isLikeRGB   : isLikeRGB,
-        isLikeRGBA  : isLikeRGBA,
-        isLikeHSL   : isLikeHSL,
-        isLikeHSLA  : isLikeHSLA
-    }
+module.exports.generators = {
+    arbPct01       : arbPct01,
+    arbHex         : arbHex,
+    arbHex2        : arbHex2,
+    arbHexTriplet  : arbHexTriplet,
+    arbHex2Triplet : arbHex2Triplet,
+    arbRGB         : arbRGB,
+    arbRGBA        : arbRGBA,
+    arbHSL         : arbHSL,
+    arbHSLA        : arbHSLA,
+    arbHSV         : arbHSV,
+    arbHSVA        : arbHSVA,
+    arbHSB         : arbHSV,
+    arbHSBA        : arbHSVA
+};
+
+module.exports.tests = {
+    isChromath  : isChromath,
+    isLikeColor : isLikeColor,
+    isLikeRGB   : isLikeRGB,
+    isLikeRGBA  : isLikeRGBA,
+    isLikeHSL   : isLikeHSL,
+    isLikeHSLA  : isLikeHSLA,
+    isLikeHSV   : isLikeHSV,
+    isLikeHSVA  : isLikeHSVA,
+    isLikeHSB   : isLikeHSV,
+    isLikeHSBA  : isLikeHSVA
 };
