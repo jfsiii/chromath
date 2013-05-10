@@ -32,5 +32,17 @@
         "tap": "*",
         "quickcheck": "git://github.com/jfsiii/node-quickcheck.git"
     },
+    "testling": {
+      "files": "test/*.js",
+      "browsers": [
+        "ie/6..latest",
+        "chrome/4..latest",
+        "firefox/3..latest",
+        "safari/4..latest",
+        "opera/11..latest",
+        "iphone/6..latest",
+        "ipad/6..latest"
+      ]
+    },
     "license" : "MIT"
 }
