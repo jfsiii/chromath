@@ -59,3 +59,6 @@
 
 ## License
 [MIT](http://jfsiii.mit-license.org)
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/jfsiii/chromath/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
