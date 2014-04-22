@@ -1,48 +1,51 @@
 {
-    "name" : "chromath",
-    "version" : "0.0.5",
-    "description" : "JavaScript color conversion and manipulation functions",
-    "main" : "chromath.js",
-    "repository" : {
-        "type" : "git",
-        "url" : "git://github.com/jfsiii/chromath.git"
-    },
-    "homepage" : "https://github.com/jfsiii/chromath",
-    "keywords" : [
-        "color",
-        "math",
-        "rgb",
-        "hsl",
-        "hsv",
-        "hsb",
-        "hex",
-        "palette",
-        "gradient",
-        "convert",
-        "conversion"
-    ],
-    "author" : {
-        "name" : "John Schulz",
-        "url" : "http://JFSIII.org"
-    },
-    "scripts": {
-        "test": "tap test/*.js"
-    },
-    "devDependencies": {
-        "tap": "*",
-        "quickcheck": "git://github.com/jfsiii/node-quickcheck.git"
-    },
-    "testling": {
-      "files": "test/*.js",
-      "browsers": [
-        "ie/6..latest",
-        "chrome/4..latest",
-        "firefox/3..latest",
-        "safari/4..latest",
-        "opera/11..latest",
-        "iphone/6..latest",
-        "ipad/6..latest"
-      ]
-    },
-    "license" : "MIT"
+  "name": "chromath",
+  "version": "0.0.6",
+  "description": "JavaScript color conversion and manipulation functions",
+  "main": "chromath.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jfsiii/chromath.git"
+  },
+  "homepage": "https://github.com/jfsiii/chromath",
+  "keywords": [
+    "color",
+    "math",
+    "rgb",
+    "hsl",
+    "hsv",
+    "hsb",
+    "hex",
+    "palette",
+    "gradient",
+    "convert",
+    "conversion"
+  ],
+  "author": {
+    "name": "John Schulz",
+    "url": "http://JFSIII.org"
+  },
+  "scripts": {
+    "test": "tap test/*.js",
+    "build": "browserify -s Chromath -e index.js > dist/chromath.js; uglifyjs dist/chromath.js -c -m -o dist/chromath.min.js"
+  },
+  "devDependencies": {
+    "tap": "*",
+    "quickcheck": "git://github.com/jfsiii/node-quickcheck.git",
+    "uglifyjs": "^2.3.6",
+    "browserify": "^3.44.2"
+  },
+  "testling": {
+    "files": "test/*.js",
+    "browsers": [
+      "ie/6..latest",
+      "chrome/4..latest",
+      "firefox/3..latest",
+      "safari/4..latest",
+      "opera/11..latest",
+      "iphone/6..latest",
+      "ipad/6..latest"
+    ]
+  },
+  "license": "MIT"
 }

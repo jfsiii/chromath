@@ -1,397 +1,9 @@
-(function(){var require = function (file, cwd) {
-    var resolved = require.resolve(file, cwd || '/');
-    var mod = require.modules[resolved];
-    if (!mod) throw new Error(
-        'Failed to resolve module ' + file + ', tried ' + resolved
-    );
-    var cached = require.cache[resolved];
-    var res = cached? cached.exports : mod();
-    return res;
-};
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Chromath=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+var Chromath = _dereq_('./src/chromath.js');
+module.exports = Chromath;
 
-require.paths = [];
-require.modules = {};
-require.cache = {};
-require.extensions = [".js",".coffee",".json"];
-
-require._core = {
-    'assert': true,
-    'events': true,
-    'fs': true,
-    'path': true,
-    'vm': true
-};
-
-require.resolve = (function () {
-    return function (x, cwd) {
-        if (!cwd) cwd = '/';
-
-        if (require._core[x]) return x;
-        var path = require.modules.path();
-        cwd = path.resolve('/', cwd);
-        var y = cwd || '/';
-
-        if (x.match(/^(?:\.\.?\/|\/)/)) {
-            var m = loadAsFileSync(path.resolve(y, x))
-                || loadAsDirectorySync(path.resolve(y, x));
-            if (m) return m;
-        }
-
-        var n = loadNodeModulesSync(x, y);
-        if (n) return n;
-
-        throw new Error("Cannot find module '" + x + "'");
-
-        function loadAsFileSync (x) {
-            x = path.normalize(x);
-            if (require.modules[x]) {
-                return x;
-            }
-
-            for (var i = 0; i < require.extensions.length; i++) {
-                var ext = require.extensions[i];
-                if (require.modules[x + ext]) return x + ext;
-            }
-        }
-
-        function loadAsDirectorySync (x) {
-            x = x.replace(/\/+$/, '');
-            var pkgfile = path.normalize(x + '/package.json');
-            if (require.modules[pkgfile]) {
-                var pkg = require.modules[pkgfile]();
-                var b = pkg.browserify;
-                if (typeof b === 'object' && b.main) {
-                    var m = loadAsFileSync(path.resolve(x, b.main));
-                    if (m) return m;
-                }
-                else if (typeof b === 'string') {
-                    var m = loadAsFileSync(path.resolve(x, b));
-                    if (m) return m;
-                }
-                else if (pkg.main) {
-                    var m = loadAsFileSync(path.resolve(x, pkg.main));
-                    if (m) return m;
-                }
-            }
-
-            return loadAsFileSync(x + '/index');
-        }
-
-        function loadNodeModulesSync (x, start) {
-            var dirs = nodeModulesPathsSync(start);
-            for (var i = 0; i < dirs.length; i++) {
-                var dir = dirs[i];
-                var m = loadAsFileSync(dir + '/' + x);
-                if (m) return m;
-                var n = loadAsDirectorySync(dir + '/' + x);
-                if (n) return n;
-            }
-
-            var m = loadAsFileSync(x);
-            if (m) return m;
-        }
-
-        function nodeModulesPathsSync (start) {
-            var parts;
-            if (start === '/') parts = [ '' ];
-            else parts = path.normalize(start).split('/');
-
-            var dirs = [];
-            for (var i = parts.length - 1; i >= 0; i--) {
-                if (parts[i] === 'node_modules') continue;
-                var dir = parts.slice(0, i + 1).join('/') + '/node_modules';
-                dirs.push(dir);
-            }
-
-            return dirs;
-        }
-    };
-})();
-
-require.alias = function (from, to) {
-    var path = require.modules.path();
-    var res = null;
-    try {
-        res = require.resolve(from + '/package.json', '/');
-    }
-    catch (err) {
-        res = require.resolve(from, '/');
-    }
-    var basedir = path.dirname(res);
-
-    var keys = (Object.keys || function (obj) {
-        var res = [];
-        for (var key in obj) res.push(key);
-        return res;
-    })(require.modules);
-
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        if (key.slice(0, basedir.length + 1) === basedir + '/') {
-            var f = key.slice(basedir.length);
-            require.modules[to + f] = require.modules[basedir + f];
-        }
-        else if (key === basedir) {
-            require.modules[to] = require.modules[basedir];
-        }
-    }
-};
-
-(function () {
-    var process = {};
-    var global = typeof window !== 'undefined' ? window : {};
-    var definedProcess = false;
-
-    require.define = function (filename, fn) {
-        if (!definedProcess && require.modules.__browserify_process) {
-            process = require.modules.__browserify_process();
-            definedProcess = true;
-        }
-
-        var dirname = require._core[filename]
-            ? ''
-            : require.modules.path().dirname(filename)
-        ;
-
-        var require_ = function (file) {
-            var requiredModule = require(file, dirname);
-            var cached = require.cache[require.resolve(file, dirname)];
-
-            if (cached && cached.parent === null) {
-                cached.parent = module_;
-            }
-
-            return requiredModule;
-        };
-        require_.resolve = function (name) {
-            return require.resolve(name, dirname);
-        };
-        require_.modules = require.modules;
-        require_.define = require.define;
-        require_.cache = require.cache;
-        var module_ = {
-            id : filename,
-            filename: filename,
-            exports : {},
-            loaded : false,
-            parent: null
-        };
-
-        require.modules[filename] = function () {
-            require.cache[filename] = module_;
-            fn.call(
-                module_.exports,
-                require_,
-                module_,
-                module_.exports,
-                dirname,
-                filename,
-                process,
-                global
-            );
-            module_.loaded = true;
-            return module_.exports;
-        };
-    };
-})();
-
-
-require.define("path",function(require,module,exports,__dirname,__filename,process,global){function filter (xs, fn) {
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (fn(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
-}
-
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-  for (var i = parts.length; i >= 0; i--) {
-    var last = parts[i];
-    if (last == '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  }
-
-  // if the path is allowed to go above the root, restore leading ..s
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-}
-
-// Regex to split a filename into [*, dir, basename, ext]
-// posix version
-var splitPathRe = /^(.+\/(?!$)|\/)?((?:.+?)?(\.[^.]*)?)$/;
-
-// path.resolve([from ...], to)
-// posix version
-exports.resolve = function() {
-var resolvedPath = '',
-    resolvedAbsolute = false;
-
-for (var i = arguments.length; i >= -1 && !resolvedAbsolute; i--) {
-  var path = (i >= 0)
-      ? arguments[i]
-      : process.cwd();
-
-  // Skip empty and invalid entries
-  if (typeof path !== 'string' || !path) {
-    continue;
-  }
-
-  resolvedPath = path + '/' + resolvedPath;
-  resolvedAbsolute = path.charAt(0) === '/';
-}
-
-// At this point the path should be resolved to a full absolute path, but
-// handle relative paths to be safe (might happen when process.cwd() fails)
-
-// Normalize the path
-resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-};
-
-// path.normalize(path)
-// posix version
-exports.normalize = function(path) {
-var isAbsolute = path.charAt(0) === '/',
-    trailingSlash = path.slice(-1) === '/';
-
-// Normalize the path
-path = normalizeArray(filter(path.split('/'), function(p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-};
-
-
-// posix version
-exports.join = function() {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
-    return p && typeof p === 'string';
-  }).join('/'));
-};
-
-
-exports.dirname = function(path) {
-  var dir = splitPathRe.exec(path)[1] || '';
-  var isWindows = false;
-  if (!dir) {
-    // No dirname
-    return '.';
-  } else if (dir.length === 1 ||
-      (isWindows && dir.length <= 3 && dir.charAt(1) === ':')) {
-    // It is just a slash or a drive letter with a slash
-    return dir;
-  } else {
-    // It is a full dirname, strip trailing slash
-    return dir.substring(0, dir.length - 1);
-  }
-};
-
-
-exports.basename = function(path, ext) {
-  var f = splitPathRe.exec(path)[2] || '';
-  // TODO: make this comparison case-insensitive on windows?
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-  return f;
-};
-
-
-exports.extname = function(path) {
-  return splitPathRe.exec(path)[3] || '';
-};
-
-});
-
-require.define("__browserify_process",function(require,module,exports,__dirname,__filename,process,global){var process = module.exports = {};
-
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-        && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-        && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
-    }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            if (ev.source === window && ev.data === 'browserify-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('browserify-tick', '*');
-        };
-    }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
-
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-
-process.binding = function (name) {
-    if (name === 'evals') return (require)('vm')
-    else throw new Error('No such module. (Possibly not yet loaded)')
-};
-
-(function () {
-    var cwd = '/';
-    var path;
-    process.cwd = function () { return cwd };
-    process.chdir = function (dir) {
-        if (!path) path = require('path');
-        cwd = path.resolve(dir, cwd);
-    };
-})();
-
-});
-
-require.define("/src/chromath.js",function(require,module,exports,__dirname,__filename,process,global){var util = require('./util');
+},{"./src/chromath.js":2}],2:[function(_dereq_,module,exports){
+var util = _dereq_('./util');
 /*
    Class: Chromath
 */
@@ -1486,10 +1098,10 @@ Chromath.parsers = [
    }
 (end code)
  */
-Chromath.parsers = require('./parsers').parsers;
+Chromath.parsers = _dereq_('./parsers').parsers;
 
 // Group: Instance methods - color representation
-Chromath.prototype = require('./prototype')(Chromath);
+Chromath.prototype = _dereq_('./prototype')(Chromath);
 
 /*
   Property: Chromath.colors
@@ -1510,8 +1122,8 @@ Chromath.prototype = require('./prototype')(Chromath);
   > > Chromath.beige.toString()
   > "#F5F5DC"
 */
-var css2Colors  = require('./colornames_css2');
-var css3Colors  = require('./colornames_css3');
+var css2Colors  = _dereq_('./colornames_css2');
+var css3Colors  = _dereq_('./colornames_css3');
 var allColors   = util.merge({}, css2Colors, css3Colors);
 Chromath.colors = {};
 for (var colorName in allColors) {
@@ -1527,121 +1139,168 @@ Chromath.parsers.push({
     }
 });
 
-module.exports = window.Chromath = Chromath;
+module.exports = Chromath;
 
-});
-
-require.define("/src/util.js",function(require,module,exports,__dirname,__filename,process,global){var util = {};
-
-util.clamp = function ( val, min, max ) {
-    if (val > max) return max;
-    if (val < min) return min;
-    return val;
+},{"./colornames_css2":3,"./colornames_css3":4,"./parsers":5,"./prototype":6,"./util":7}],3:[function(_dereq_,module,exports){
+module.exports = {
+    // from http://www.w3.org/TR/REC-html40/types.html#h-6.5
+    aqua    : {r: 0,   g: 255, b: 255},
+    black   : {r: 0,   g: 0,   b: 0},
+    blue    : {r: 0,   g: 0,   b: 255},
+    fuchsia : {r: 255, g: 0,   b: 255},
+    gray    : {r: 128, g: 128, b: 128},
+    green   : {r: 0,   g: 128, b: 0},
+    lime    : {r: 0,   g: 255, b: 0},
+    maroon  : {r: 128, g: 0,   b: 0},
+    navy    : {r: 0,   g: 0,   b: 128},
+    olive   : {r: 128, g: 128, b: 0},
+    purple  : {r: 128, g: 0,   b: 128},
+    red     : {r: 255, g: 0,   b: 0},
+    silver  : {r: 192, g: 192, b: 192},
+    teal    : {r: 0,   g: 128, b: 128},
+    white   : {r: 255, g: 255, b: 255},
+    yellow  : {r: 255, g: 255, b: 0}
 };
 
-util.merge = function () {
-    var dest = arguments[0], i=1, source, prop;
-    while (source = arguments[i++])
-        for (prop in source) dest[prop] = source[prop];
+},{}],4:[function(_dereq_,module,exports){
+module.exports = {
+    // http://www.w3.org/TR/css3-color/#svg-color
+    // http://www.w3.org/TR/SVG/types.html#ColorKeywords
+    aliceblue            : {r: 240, g: 248, b: 255},
+    antiquewhite         : {r: 250, g: 235, b: 215},
+    aquamarine           : {r: 127, g: 255, b: 212},
+    azure                : {r: 240, g: 255, b: 255},
+    beige                : {r: 245, g: 245, b: 220},
+    bisque               : {r: 255, g: 228, b: 196},
+    blanchedalmond       : {r: 255, g: 235, b: 205},
+    blueviolet           : {r: 138, g: 43,  b: 226},
+    brown                : {r: 165, g: 42,  b: 42},
+    burlywood            : {r: 222, g: 184, b: 135},
+    cadetblue            : {r: 95,  g: 158, b: 160},
+    chartreuse           : {r: 127, g: 255, b: 0},
+    chocolate            : {r: 210, g: 105, b: 30},
+    coral                : {r: 255, g: 127, b: 80},
+    cornflowerblue       : {r: 100, g: 149, b: 237},
+    cornsilk             : {r: 255, g: 248, b: 220},
+    crimson              : {r: 220, g: 20,  b: 60},
+    cyan                 : {r: 0,   g: 255, b: 255},
+    darkblue             : {r: 0,   g: 0,   b: 139},
+    darkcyan             : {r: 0,   g: 139, b: 139},
+    darkgoldenrod        : {r: 184, g: 134, b: 11},
+    darkgray             : {r: 169, g: 169, b: 169},
+    darkgreen            : {r: 0,   g: 100, b: 0},
+    darkgrey             : {r: 169, g: 169, b: 169},
+    darkkhaki            : {r: 189, g: 183, b: 107},
+    darkmagenta          : {r: 139, g: 0,   b: 139},
+    darkolivegreen       : {r: 85,  g: 107, b: 47},
+    darkorange           : {r: 255, g: 140, b: 0},
+    darkorchid           : {r: 153, g: 50,  b: 204},
+    darkred              : {r: 139, g: 0,   b: 0},
+    darksalmon           : {r: 233, g: 150, b: 122},
+    darkseagreen         : {r: 143, g: 188, b: 143},
+    darkslateblue        : {r: 72,  g: 61,  b: 139},
+    darkslategray        : {r: 47,  g: 79,  b: 79},
+    darkslategrey        : {r: 47,  g: 79,  b: 79},
+    darkturquoise        : {r: 0,   g: 206, b: 209},
+    darkviolet           : {r: 148, g: 0,   b: 211},
+    deeppink             : {r: 255, g: 20,  b: 147},
+    deepskyblue          : {r: 0,   g: 191, b: 255},
+    dimgray              : {r: 105, g: 105, b: 105},
+    dimgrey              : {r: 105, g: 105, b: 105},
+    dodgerblue           : {r: 30,  g: 144, b: 255},
+    firebrick            : {r: 178, g: 34,  b: 34},
+    floralwhite          : {r: 255, g: 250, b: 240},
+    forestgreen          : {r: 34,  g: 139, b: 34},
+    gainsboro            : {r: 220, g: 220, b: 220},
+    ghostwhite           : {r: 248, g: 248, b: 255},
+    gold                 : {r: 255, g: 215, b: 0},
+    goldenrod            : {r: 218, g: 165, b: 32},
+    greenyellow          : {r: 173, g: 255, b: 47},
+    grey                 : {r: 128, g: 128, b: 128},
+    honeydew             : {r: 240, g: 255, b: 240},
+    hotpink              : {r: 255, g: 105, b: 180},
+    indianred            : {r: 205, g: 92,  b: 92},
+    indigo               : {r: 75,  g: 0,   b: 130},
+    ivory                : {r: 255, g: 255, b: 240},
+    khaki                : {r: 240, g: 230, b: 140},
+    lavender             : {r: 230, g: 230, b: 250},
+    lavenderblush        : {r: 255, g: 240, b: 245},
+    lawngreen            : {r: 124, g: 252, b: 0},
+    lemonchiffon         : {r: 255, g: 250, b: 205},
+    lightblue            : {r: 173, g: 216, b: 230},
+    lightcoral           : {r: 240, g: 128, b: 128},
+    lightcyan            : {r: 224, g: 255, b: 255},
+    lightgoldenrodyellow : {r: 250, g: 250, b: 210},
+    lightgray            : {r: 211, g: 211, b: 211},
+    lightgreen           : {r: 144, g: 238, b: 144},
+    lightgrey            : {r: 211, g: 211, b: 211},
+    lightpink            : {r: 255, g: 182, b: 193},
+    lightsalmon          : {r: 255, g: 160, b: 122},
+    lightseagreen        : {r: 32,  g: 178, b: 170},
+    lightskyblue         : {r: 135, g: 206, b: 250},
+    lightslategray       : {r: 119, g: 136, b: 153},
+    lightslategrey       : {r: 119, g: 136, b: 153},
+    lightsteelblue       : {r: 176, g: 196, b: 222},
+    lightyellow          : {r: 255, g: 255, b: 224},
+    limegreen            : {r: 50,  g: 205, b: 50},
+    linen                : {r: 250, g: 240, b: 230},
+    magenta              : {r: 255, g: 0,   b: 255},
+    mediumaquamarine     : {r: 102, g: 205, b: 170},
+    mediumblue           : {r: 0,   g: 0,   b: 205},
+    mediumorchid         : {r: 186, g: 85,  b: 211},
+    mediumpurple         : {r: 147, g: 112, b: 219},
+    mediumseagreen       : {r: 60,  g: 179, b: 113},
+    mediumslateblue      : {r: 123, g: 104, b: 238},
+    mediumspringgreen    : {r: 0,   g: 250, b: 154},
+    mediumturquoise      : {r: 72,  g: 209, b: 204},
+    mediumvioletred      : {r: 199, g: 21,  b: 133},
+    midnightblue         : {r: 25,  g: 25,  b: 112},
+    mintcream            : {r: 245, g: 255, b: 250},
+    mistyrose            : {r: 255, g: 228, b: 225},
+    moccasin             : {r: 255, g: 228, b: 181},
+    navajowhite          : {r: 255, g: 222, b: 173},
+    oldlace              : {r: 253, g: 245, b: 230},
+    olivedrab            : {r: 107, g: 142, b: 35},
+    orange               : {r: 255, g: 165, b: 0},
+    orangered            : {r: 255, g: 69,  b: 0},
+    orchid               : {r: 218, g: 112, b: 214},
+    palegoldenrod        : {r: 238, g: 232, b: 170},
+    palegreen            : {r: 152, g: 251, b: 152},
+    paleturquoise        : {r: 175, g: 238, b: 238},
+    palevioletred        : {r: 219, g: 112, b: 147},
+    papayawhip           : {r: 255, g: 239, b: 213},
+    peachpuff            : {r: 255, g: 218, b: 185},
+    peru                 : {r: 205, g: 133, b: 63},
+    pink                 : {r: 255, g: 192, b: 203},
+    plum                 : {r: 221, g: 160, b: 221},
+    powderblue           : {r: 176, g: 224, b: 230},
+    rosybrown            : {r: 188, g: 143, b: 143},
+    royalblue            : {r: 65,  g: 105, b: 225},
+    saddlebrown          : {r: 139, g: 69,  b: 19},
+    salmon               : {r: 250, g: 128, b: 114},
+    sandybrown           : {r: 244, g: 164, b: 96},
+    seagreen             : {r: 46,  g: 139, b: 87},
+    seashell             : {r: 255, g: 245, b: 238},
+    sienna               : {r: 160, g: 82,  b: 45},
+    skyblue              : {r: 135, g: 206, b: 235},
+    slateblue            : {r: 106, g: 90,  b: 205},
+    slategray            : {r: 112, g: 128, b: 144},
+    slategrey            : {r: 112, g: 128, b: 144},
+    snow                 : {r: 255, g: 250, b: 250},
+    springgreen          : {r: 0,   g: 255, b: 127},
+    steelblue            : {r: 70,  g: 130, b: 180},
+    tan                  : {r: 210, g: 180, b: 140},
+    thistle              : {r: 216, g: 191, b: 216},
+    tomato               : {r: 255, g: 99,  b: 71},
+    turquoise            : {r: 64,  g: 224, b: 208},
+    violet               : {r: 238, g: 130, b: 238},
+    wheat                : {r: 245, g: 222, b: 179},
+    whitesmoke           : {r: 245, g: 245, b: 245},
+    yellowgreen          : {r: 154, g: 205, b: 50}
+}
 
-    return dest;
-};
-
-util.isArray = function ( test ) {
-    return Object.prototype.toString.call(test) === '[object Array]';
-};
-
-util.isString = function ( test ) {
-    return Object.prototype.toString.call(test) === '[object String]';
-};
-
-util.isNumber = function ( test ) {
-    return Object.prototype.toString.call(test) === '[object Number]';
-};
-
-util.isObject = function ( test ) {
-    return Object.prototype.toString.call(test) === '[object Object]';
-};
-
-util.lpad = function ( val, len, pad ) {
-    val = val.toString();
-    if (!len) len = 2;
-    if (!pad) pad = '0';
-
-    while (val.length < len) val = pad+val;
-
-    return val;
-};
-
-util.lerp = function (from, to, by) {
-    return from + (to-from) * by;
-};
-
-util.times = function (n, fn, context) {
-    for (var i = 0, results = []; i < n; i++) {
-        results[i] = fn.call(context, i);
-    }
-    return results;
-};
-
-util.rgb = {
-    fromArgs: function (r, g, b, a) {
-        var rgb = arguments[0];
-
-        if (util.isArray(rgb)){ r=rgb[0]; g=rgb[1]; b=rgb[2]; a=rgb[3]; }
-        if (util.isObject(rgb)){ r=rgb.r; g=rgb.g; b=rgb.b; a=rgb.a;  }
-
-        return [r, g, b, a];
-    },
-    scaled01: function (r, g, b) {
-        if (!isFinite(arguments[1])){
-            var rgb = util.rgb.fromArgs(r, g, b);
-            r = rgb[0], g = rgb[1], b = rgb[2];
-        }
-
-        if (r > 1) r /= 255;
-        if (g > 1) g /= 255;
-        if (b > 1) b /= 255;
-
-        return [r, g, b];
-    },
-    pctWithSymbol: function (r, g, b) {
-        var rgb = this.scaled01(r, g, b);
-
-        return rgb.map(function (v) {
-            return Math.round(v * 255) + '%';
-        });
-    }
-};
-
-util.hsl = {
-    fromArgs: function (h, s, l, a) {
-        var hsl = arguments[0];
-
-        if (util.isArray(hsl)){ h=hsl[0]; s=hsl[1]; l=hsl[2]; a=hsl[3]; }
-        if (util.isObject(hsl)){ h=hsl.h; s=hsl.s; l=(hsl.l || hsl.v); a=hsl.a; }
-
-        return [h, s, l, a];
-    },
-    scaled: function (h, s, l) {
-        if (!isFinite(arguments[1])){
-            var hsl = util.hsl.fromArgs(h, s, l);
-            h = hsl[0], s = hsl[1], l = hsl[2];
-        }
-
-        h = (((h % 360) + 360) % 360);
-        if (s > 1) s /= 100;
-        if (l > 1) l /= 100;
-
-        return [h, s, l];
-    }
-};
-
-module.exports = util;
-
-});
-
-require.define("/src/parsers.js",function(require,module,exports,__dirname,__filename,process,global){var util = require('./util');
+},{}],5:[function(_dereq_,module,exports){
+var util = _dereq_('./util');
 
 module.exports = {
     parsers: [
@@ -1684,7 +1343,8 @@ module.exports = {
 
         {
             example: ['rgb(123, 234, 45)', 'rgb(25, 50%, 100%)', 'rgba(12%, 34, 56%, 0.78)'],
-            regex: /^rgba*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
+            // regex: /^rgba*\((\d{1,3}\%*),\s*(\d{1,3}\%*),\s*(\d{1,3}\%*)(?:,\s*([0-9.]+))?\)/,
+            regex: /^rgba*\(([0-9]*\.?[0-9]+\%*),\s*([0-9]*\.?[0-9]+\%*),\s*([0-9]*\.?[0-9]+\%*)(?:,\s*([0-9.]+))?\)/,
             process: function (s,r,g,b,a)
             {
                 r = r && r.slice(-1) == '%' ? (r.slice(0,-1) / 100) : r*1;
@@ -1726,9 +1386,8 @@ module.exports = {
     ]
 };
 
-});
-
-require.define("/src/prototype.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = function ChromathPrototype(Chromath) {
+},{"./util":7}],6:[function(_dereq_,module,exports){
+module.exports = function ChromathPrototype(Chromath) {
   return {
       /*
          Method: toName
@@ -2419,172 +2078,115 @@ require.define("/src/prototype.js",function(require,module,exports,__dirname,__f
   };
 };
 
-});
+},{}],7:[function(_dereq_,module,exports){
+var util = {};
 
-require.define("/src/colornames_css2.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = {
-    // from http://www.w3.org/TR/REC-html40/types.html#h-6.5
-    aqua    : {r: 0,   g: 255, b: 255},
-    black   : {r: 0,   g: 0,   b: 0},
-    blue    : {r: 0,   g: 0,   b: 255},
-    fuchsia : {r: 255, g: 0,   b: 255},
-    gray    : {r: 128, g: 128, b: 128},
-    green   : {r: 0,   g: 128, b: 0},
-    lime    : {r: 0,   g: 255, b: 0},
-    maroon  : {r: 128, g: 0,   b: 0},
-    navy    : {r: 0,   g: 0,   b: 128},
-    olive   : {r: 128, g: 128, b: 0},
-    purple  : {r: 128, g: 0,   b: 128},
-    red     : {r: 255, g: 0,   b: 0},
-    silver  : {r: 192, g: 192, b: 192},
-    teal    : {r: 0,   g: 128, b: 128},
-    white   : {r: 255, g: 255, b: 255},
-    yellow  : {r: 255, g: 255, b: 0}
+util.clamp = function ( val, min, max ) {
+    if (val > max) return max;
+    if (val < min) return min;
+    return val;
 };
 
+util.merge = function () {
+    var dest = arguments[0], i=1, source, prop;
+    while (source = arguments[i++])
+        for (prop in source) dest[prop] = source[prop];
+
+    return dest;
+};
+
+util.isArray = function ( test ) {
+    return Object.prototype.toString.call(test) === '[object Array]';
+};
+
+util.isString = function ( test ) {
+    return Object.prototype.toString.call(test) === '[object String]';
+};
+
+util.isNumber = function ( test ) {
+    return Object.prototype.toString.call(test) === '[object Number]';
+};
+
+util.isObject = function ( test ) {
+    return Object.prototype.toString.call(test) === '[object Object]';
+};
+
+util.lpad = function ( val, len, pad ) {
+    val = val.toString();
+    if (!len) len = 2;
+    if (!pad) pad = '0';
+
+    while (val.length < len) val = pad+val;
+
+    return val;
+};
+
+util.lerp = function (from, to, by) {
+    return from + (to-from) * by;
+};
+
+util.times = function (n, fn, context) {
+    for (var i = 0, results = []; i < n; i++) {
+        results[i] = fn.call(context, i);
+    }
+    return results;
+};
+
+util.rgb = {
+    fromArgs: function (r, g, b, a) {
+        var rgb = arguments[0];
+
+        if (util.isArray(rgb)){ r=rgb[0]; g=rgb[1]; b=rgb[2]; a=rgb[3]; }
+        if (util.isObject(rgb)){ r=rgb.r; g=rgb.g; b=rgb.b; a=rgb.a;  }
+
+        return [r, g, b, a];
+    },
+    scaled01: function (r, g, b) {
+        if (!isFinite(arguments[1])){
+            var rgb = util.rgb.fromArgs(r, g, b);
+            r = rgb[0], g = rgb[1], b = rgb[2];
+        }
+
+        if (r > 1) r /= 255;
+        if (g > 1) g /= 255;
+        if (b > 1) b /= 255;
+
+        return [r, g, b];
+    },
+    pctWithSymbol: function (r, g, b) {
+        var rgb = this.scaled01(r, g, b);
+
+        return rgb.map(function (v) {
+            return Math.round(v * 255) + '%';
+        });
+    }
+};
+
+util.hsl = {
+    fromArgs: function (h, s, l, a) {
+        var hsl = arguments[0];
+
+        if (util.isArray(hsl)){ h=hsl[0]; s=hsl[1]; l=hsl[2]; a=hsl[3]; }
+        if (util.isObject(hsl)){ h=hsl.h; s=hsl.s; l=(hsl.l || hsl.v); a=hsl.a; }
+
+        return [h, s, l, a];
+    },
+    scaled: function (h, s, l) {
+        if (!isFinite(arguments[1])){
+            var hsl = util.hsl.fromArgs(h, s, l);
+            h = hsl[0], s = hsl[1], l = hsl[2];
+        }
+
+        h = (((h % 360) + 360) % 360);
+        if (s > 1) s /= 100;
+        if (l > 1) l /= 100;
+
+        return [h, s, l];
+    }
+};
+
+module.exports = util;
+
+},{}]},{},[1])
+(1)
 });
-
-require.define("/src/colornames_css3.js",function(require,module,exports,__dirname,__filename,process,global){module.exports = {
-    // http://www.w3.org/TR/css3-color/#svg-color
-    // http://www.w3.org/TR/SVG/types.html#ColorKeywords
-    aliceblue            : {r: 240, g: 248, b: 255},
-    antiquewhite         : {r: 250, g: 235, b: 215},
-    aquamarine           : {r: 127, g: 255, b: 212},
-    azure                : {r: 240, g: 255, b: 255},
-    beige                : {r: 245, g: 245, b: 220},
-    bisque               : {r: 255, g: 228, b: 196},
-    blanchedalmond       : {r: 255, g: 235, b: 205},
-    blueviolet           : {r: 138, g: 43,  b: 226},
-    brown                : {r: 165, g: 42,  b: 42},
-    burlywood            : {r: 222, g: 184, b: 135},
-    cadetblue            : {r: 95,  g: 158, b: 160},
-    chartreuse           : {r: 127, g: 255, b: 0},
-    chocolate            : {r: 210, g: 105, b: 30},
-    coral                : {r: 255, g: 127, b: 80},
-    cornflowerblue       : {r: 100, g: 149, b: 237},
-    cornsilk             : {r: 255, g: 248, b: 220},
-    crimson              : {r: 220, g: 20,  b: 60},
-    cyan                 : {r: 0,   g: 255, b: 255},
-    darkblue             : {r: 0,   g: 0,   b: 139},
-    darkcyan             : {r: 0,   g: 139, b: 139},
-    darkgoldenrod        : {r: 184, g: 134, b: 11},
-    darkgray             : {r: 169, g: 169, b: 169},
-    darkgreen            : {r: 0,   g: 100, b: 0},
-    darkgrey             : {r: 169, g: 169, b: 169},
-    darkkhaki            : {r: 189, g: 183, b: 107},
-    darkmagenta          : {r: 139, g: 0,   b: 139},
-    darkolivegreen       : {r: 85,  g: 107, b: 47},
-    darkorange           : {r: 255, g: 140, b: 0},
-    darkorchid           : {r: 153, g: 50,  b: 204},
-    darkred              : {r: 139, g: 0,   b: 0},
-    darksalmon           : {r: 233, g: 150, b: 122},
-    darkseagreen         : {r: 143, g: 188, b: 143},
-    darkslateblue        : {r: 72,  g: 61,  b: 139},
-    darkslategray        : {r: 47,  g: 79,  b: 79},
-    darkslategrey        : {r: 47,  g: 79,  b: 79},
-    darkturquoise        : {r: 0,   g: 206, b: 209},
-    darkviolet           : {r: 148, g: 0,   b: 211},
-    deeppink             : {r: 255, g: 20,  b: 147},
-    deepskyblue          : {r: 0,   g: 191, b: 255},
-    dimgray              : {r: 105, g: 105, b: 105},
-    dimgrey              : {r: 105, g: 105, b: 105},
-    dodgerblue           : {r: 30,  g: 144, b: 255},
-    firebrick            : {r: 178, g: 34,  b: 34},
-    floralwhite          : {r: 255, g: 250, b: 240},
-    forestgreen          : {r: 34,  g: 139, b: 34},
-    gainsboro            : {r: 220, g: 220, b: 220},
-    ghostwhite           : {r: 248, g: 248, b: 255},
-    gold                 : {r: 255, g: 215, b: 0},
-    goldenrod            : {r: 218, g: 165, b: 32},
-    greenyellow          : {r: 173, g: 255, b: 47},
-    grey                 : {r: 128, g: 128, b: 128},
-    honeydew             : {r: 240, g: 255, b: 240},
-    hotpink              : {r: 255, g: 105, b: 180},
-    indianred            : {r: 205, g: 92,  b: 92},
-    indigo               : {r: 75,  g: 0,   b: 130},
-    ivory                : {r: 255, g: 255, b: 240},
-    khaki                : {r: 240, g: 230, b: 140},
-    lavender             : {r: 230, g: 230, b: 250},
-    lavenderblush        : {r: 255, g: 240, b: 245},
-    lawngreen            : {r: 124, g: 252, b: 0},
-    lemonchiffon         : {r: 255, g: 250, b: 205},
-    lightblue            : {r: 173, g: 216, b: 230},
-    lightcoral           : {r: 240, g: 128, b: 128},
-    lightcyan            : {r: 224, g: 255, b: 255},
-    lightgoldenrodyellow : {r: 250, g: 250, b: 210},
-    lightgray            : {r: 211, g: 211, b: 211},
-    lightgreen           : {r: 144, g: 238, b: 144},
-    lightgrey            : {r: 211, g: 211, b: 211},
-    lightpink            : {r: 255, g: 182, b: 193},
-    lightsalmon          : {r: 255, g: 160, b: 122},
-    lightseagreen        : {r: 32,  g: 178, b: 170},
-    lightskyblue         : {r: 135, g: 206, b: 250},
-    lightslategray       : {r: 119, g: 136, b: 153},
-    lightslategrey       : {r: 119, g: 136, b: 153},
-    lightsteelblue       : {r: 176, g: 196, b: 222},
-    lightyellow          : {r: 255, g: 255, b: 224},
-    limegreen            : {r: 50,  g: 205, b: 50},
-    linen                : {r: 250, g: 240, b: 230},
-    magenta              : {r: 255, g: 0,   b: 255},
-    mediumaquamarine     : {r: 102, g: 205, b: 170},
-    mediumblue           : {r: 0,   g: 0,   b: 205},
-    mediumorchid         : {r: 186, g: 85,  b: 211},
-    mediumpurple         : {r: 147, g: 112, b: 219},
-    mediumseagreen       : {r: 60,  g: 179, b: 113},
-    mediumslateblue      : {r: 123, g: 104, b: 238},
-    mediumspringgreen    : {r: 0,   g: 250, b: 154},
-    mediumturquoise      : {r: 72,  g: 209, b: 204},
-    mediumvioletred      : {r: 199, g: 21,  b: 133},
-    midnightblue         : {r: 25,  g: 25,  b: 112},
-    mintcream            : {r: 245, g: 255, b: 250},
-    mistyrose            : {r: 255, g: 228, b: 225},
-    moccasin             : {r: 255, g: 228, b: 181},
-    navajowhite          : {r: 255, g: 222, b: 173},
-    oldlace              : {r: 253, g: 245, b: 230},
-    olivedrab            : {r: 107, g: 142, b: 35},
-    orange               : {r: 255, g: 165, b: 0},
-    orangered            : {r: 255, g: 69,  b: 0},
-    orchid               : {r: 218, g: 112, b: 214},
-    palegoldenrod        : {r: 238, g: 232, b: 170},
-    palegreen            : {r: 152, g: 251, b: 152},
-    paleturquoise        : {r: 175, g: 238, b: 238},
-    palevioletred        : {r: 219, g: 112, b: 147},
-    papayawhip           : {r: 255, g: 239, b: 213},
-    peachpuff            : {r: 255, g: 218, b: 185},
-    peru                 : {r: 205, g: 133, b: 63},
-    pink                 : {r: 255, g: 192, b: 203},
-    plum                 : {r: 221, g: 160, b: 221},
-    powderblue           : {r: 176, g: 224, b: 230},
-    rosybrown            : {r: 188, g: 143, b: 143},
-    royalblue            : {r: 65,  g: 105, b: 225},
-    saddlebrown          : {r: 139, g: 69,  b: 19},
-    salmon               : {r: 250, g: 128, b: 114},
-    sandybrown           : {r: 244, g: 164, b: 96},
-    seagreen             : {r: 46,  g: 139, b: 87},
-    seashell             : {r: 255, g: 245, b: 238},
-    sienna               : {r: 160, g: 82,  b: 45},
-    skyblue              : {r: 135, g: 206, b: 235},
-    slateblue            : {r: 106, g: 90,  b: 205},
-    slategray            : {r: 112, g: 128, b: 144},
-    slategrey            : {r: 112, g: 128, b: 144},
-    snow                 : {r: 255, g: 250, b: 250},
-    springgreen          : {r: 0,   g: 255, b: 127},
-    steelblue            : {r: 70,  g: 130, b: 180},
-    tan                  : {r: 210, g: 180, b: 140},
-    thistle              : {r: 216, g: 191, b: 216},
-    tomato               : {r: 255, g: 99,  b: 71},
-    turquoise            : {r: 64,  g: 224, b: 208},
-    violet               : {r: 238, g: 130, b: 238},
-    wheat                : {r: 245, g: 222, b: 179},
-    whitesmoke           : {r: 245, g: 245, b: 245},
-    yellowgreen          : {r: 154, g: 205, b: 50}
-}
-
-});
-
-require.define("/index.js",function(require,module,exports,__dirname,__filename,process,global){var Chromath = require('./src/chromath.js');
-module.exports = Chromath;
-
-});
-require("/index.js");
-})();
-
