@@ -706,6 +706,24 @@ Chromath.invert = function (color)
     return new Chromath("#" + innerColor);
 };
 
+/*
+  Method: Chromath.contrastText
+  Choose a readable text color that has enough contrast
+  adapted from http://24ways.org/2010/calculating-color-contrast/
+  
+  Examples:
+  > > Chromath.contrastText('rgb(0, 100, 255)').toString()
+  > '#FFFFFF'
+  
+  > > Chromath.contrastText('#dd812c').toString()
+  > '#000000'
+*/
+Chromath.contrastText = function (color){
+  var c = new Chromath(color).rgb();
+  var yiq = ((c[0]*299)+(c[1]*587)+(c[2]*114))/1000;
+  return (yiq >= 128) ? new Chromath('black') : new Chromath('white');
+};
+
 //Group: Static methods - color alteration
 /*
   Method: Chromath.tint
