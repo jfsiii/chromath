@@ -483,6 +483,26 @@ Chromath.hsv2rgb = function hsv2rgb(h, s, v)
     ];
 };
 
+// Group: Static methods - color conversion
+/*
+  Method: Chromath.rgb2yiq
+  Convert an RGB value to a YIQ value
+
+  Returns: array
+
+  Example:
+  > > Chromath.rgb2yiq(50, 100, 150)
+  > "[ 0.3558823529411765, -0.17980392156862748, 0.019411764705882337 ]"
+ */
+Chromath.rgb2yiq = function rgb2yiq(r, g, b)
+{
+  var y = ((0.299 * r) + ( 0.587 * g) + ( 0.114 * b)) / 255;
+  var i = ((0.596 * r) + (-0.275 * g) + (-0.321 * b)) / 255;
+  var q = ((0.212 * r) + (-0.523 * g) + ( 0.311 * b)) / 255;
+  return [y,i,q];
+};
+
+
 /*
    Method: Chromath.hsb2rgb
    Alias for <Chromath.hsv2rgb>
@@ -498,7 +518,8 @@ Chromath.convert = {
     rgb: {
         hex: Chromath.hsv2rgb,
         hsl: Chromath.rgb2hsl,
-        hsv: Chromath.rgb2hsv
+        hsv: Chromath.rgb2hsv,
+        yiq: Chromath.rgb2yiq
     },
     hsl: {
         rgb: Chromath.hsl2rgb
