@@ -694,16 +694,9 @@ Chromath.splitcomplement = function (color)
   > '#FF9B00'
 
 */
-Chromath.invert = function (color)
-{
-    var c = new Chromath(color);
-    var innerColor = c.toString();
-    innerColor = innerColor.substring(1);           // remove #
-    innerColor = parseInt(innerColor, 16);          // convert to integer
-    innerColor = 0xFFFFFF ^ innerColor;             // invert three bytes
-    innerColor = innerColor.toString(16);           // convert to hex
-    innerColor = ("000000" + innerColor).slice(-6); // pad with leading zeros
-    return new Chromath("#" + innerColor);
+Chromath.invert = function (color) {
+    var intColor = Chromath.toInteger(color);
+    return new Chromath(0xFFFFFF ^ intColor);
 };
 
 /*
