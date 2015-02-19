@@ -510,7 +510,7 @@ Chromath.rgb2yiq = function rgb2yiq(r, g, b)
   Returns: array
 
   Example:
-  > > Chromath.rgb2yiq(0.3558823529411765, -0.17980392156862748, 0.019411764705882337)
+  > > Chromath.yiq2rgb(0.3558823529411765, -0.17980392156862748, 0.019411764705882337)
   > "[ 49.99135, 100.01855000000002, 149.83915000000002 ]"
  */
 Chromath.yiq2rgb = function rgb2yiq(y, i, q)
