@@ -1,2 +1,4 @@
-files: 
-  - src/prototype.js
+dir: src
+packageJson: package.json
+articles:
+  - Overview: README.markdown
