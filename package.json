@@ -2,7 +2,7 @@
   "name": "chromath",
   "version": "0.0.6",
   "description": "JavaScript color conversion and manipulation functions",
-  "main": "chromath.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/jfsiii/chromath.git"
