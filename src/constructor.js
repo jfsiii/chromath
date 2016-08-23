@@ -22,7 +22,9 @@
    sv - The saturation of the HSV/HSB representation of the Chromath. A number between 0 and 1.
    l - The lightness of the HSL representation of the Chromath. A number between 0 and 1.
    v - The lightness of the HSV/HSB representation of the Chromath. A number between 0 and 1.
-
+   gr - The grayness of the HCG representation of the Chromath. A number between 0 and 1.
+   c - The chroma of the HCG representation of the Chromath. A number between 0 and 1.
+   
    Examples:
   (start code)
 // There are many ways to create a Chromath instance
@@ -43,6 +45,10 @@ new Chromath('hsv(0, 100%, 100%)');       // HSV via CSS
 new Chromath({h: 0, s: 1, v: 1});         // HSV via object
 new Chromath('hsva(0, 100%, 100%, 1)');   // HSVA via CSS
 new Chromath({h: 0, s: 1, v: 1, a: 1});   // HSVA via object
+new Chromath('hcg(0, 100%, 100%)');       // HCG via CSS
+new Chromath({h: 0, c: 1, gr: 1});        // HCG via object
+new Chromath('hcga(0, 100%, 100%, 1)');   // HCGA via CSS
+new Chromath({h: 0, c: 1, gr: 1, a: 1});  // HCGA via object
 new Chromath('hsb(0, 100%, 100%)');       // HSB via CSS
 new Chromath({h: 0, s: 1, b: 1});         // HSB via object
 new Chromath('hsba(0, 100%, 100%, 1)');   // HSBA via CSS
@@ -53,7 +59,7 @@ new Chromath(16711680);                   // RGB via integer (alpha currently ig
 var util = require('./util');
 module.exports = function Chromath( mixed )
 {
-    var channels, color, hsl, hsv, rgb;
+    var channels, color, hsl, hsv, rgb, hcg;
 
     if (util.isString(mixed) || util.isNumber(mixed)) {
         channels = Chromath.parse(mixed);
@@ -77,24 +83,33 @@ module.exports = function Chromath( mixed )
         rgb = util.rgb.scaled01([channels.r, channels.g, channels.b]);
         hsl = Chromath.rgb2hsl(rgb);
         hsv = Chromath.rgb2hsv(rgb);
+        hcg = Chromath.rgb2hcg(rgb);
     } else if ('h' in channels ){
         if ('l' in channels){
             hsl = util.hsl.scaled([channels.h, channels.s, channels.l]);
             rgb = Chromath.hsl2rgb(hsl);
             hsv = Chromath.rgb2hsv(rgb);
+            hcg = Chromath.rgb2hcg(rgb);
         } else if ('v' in channels || 'b' in channels) {
             if ('b' in channels) channels.v = channels.b;
             hsv = util.hsl.scaled([channels.h, channels.s, channels.v]);
             rgb = Chromath.hsv2rgb(hsv);
             hsl = Chromath.rgb2hsl(rgb);
+            hcg = Chromath.rgb2hcg(rgb);
+        } else if ('g' in channels) {
+            if ('s' in channels) channels.c = channels.s;
+            hcg = util.hsl.scaled([channels.h, channels.c, channels.gr]);
+            rgb = Chromath.hcg2rgb(hcg);
+            hsl = Chromath.rgb2hsl(rgb);
+            hsv = Chromath.rgb2hsv(rgb);
         }
     }
-
 
     util.merge(this, {
         r:  rgb[0],  g: rgb[1], b: rgb[2],
         h:  hsl[0], sl: hsl[1], l: hsl[2],
-        sv: hsv[1],  v: hsv[2], a: channels.a
+        sv: hsv[1],  v: hsv[2], a: channels.a,
+        c:  hcg[1], gr: hcg[2]
     });
 
     return this;

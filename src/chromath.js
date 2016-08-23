@@ -386,6 +386,49 @@ Chromath.rgb2hsv = function rgb2hsv(r, g, b)
 Chromath.rgb2hsb = Chromath.rgb2hsv;
 
 /*
+  Method: Chromath.rgb2hcg
+  Convert RGB to HCG
+
+  Parameters:
+  r - Number, 0-255, representing the green channel OR Array OR object (with keys r,g,b) of RGB values
+  g - Number, 0-255, representing the green channel
+  b - Number, 0-255, representing the red channel
+
+  Returns:
+  Array
+
+  > > Chromath.rgb2hcg(0, 255, 0);
+  > [ 120, 1, 1 ]
+
+  > > Chromath.rgb2hcg([0, 0, 255]);
+  > [ 240, 1, 1 ]
+
+  > > Chromath.rgb2hcg({r: 255, g: 0, b: 0});
+  > [ 0, 1, 1 ]
+ */
+Chromath.rgb2hcg = function rgb2hsv(r, g, b)
+{
+    var rgb = util.rgb.scaled01(r, g, b);
+    r = rgb[0], g = rgb[1], b = rgb[2];
+
+    var M = Math.max(r, g, b);
+    var m = Math.min(r, g, b);
+    var C = M - m;
+    var L = C === 1 ? 0 : m/(1-C);
+    var S = C;
+
+    var h;
+    if (C === 0) h = 0; // spec'd as undefined, but usually set to 0
+    else if (M === r) h = ((g-b)/C) % 6;
+    else if (M === g) h = ((b-r)/C) + 2;
+    else if (M === b) h = ((r-g)/C) + 4;
+
+    var H = 60 * h;
+
+    return [H, parseFloat(S), parseFloat(L)];
+};
+
+/*
   Method: Chromath.hsl2rgb
   Convert from HSL to RGB
 
@@ -488,6 +531,52 @@ Chromath.hsv2rgb = function hsv2rgb(h, s, v)
    Alias for <Chromath.hsv2rgb>
  */
 Chromath.hsb2rgb = Chromath.hsv2rgb;
+
+/*
+  Method: Chromath.hcg2rgb
+  Convert HCG to RGB
+
+  Parameters:
+  h - Number, -Infinity - Infinity, representing the hue OR Array OR object (with keys h,c,g or h,c,g) of HCG values
+  c - Number, 0-1, representing the saturation
+  g - Number, 0-1, representing the lightness
+
+  Examples:
+  > > Chromath.hcg2rgb(360, 1, 1);
+  > [ 255, 0, 0 ]
+
+  > > Chromath.hcg2rgb([0, 0.5, 0]);
+  > [ 127.5, 0, 0 ]
+
+  > > Chromath.hcg2rgb({h: 210, s: 0.5, v: 1});
+  > [ 127.5, 191.25, 255 ]
+ */
+Chromath.hcg2rgb = function hsv2rgb(h, c, g)
+{
+    var hcg = util.hsl.scaled(h, c, g);
+    h=hcg[0], c=hcg[1], g=hcg[2];
+
+    var C = c;
+    var hp = h/60;
+    var X = C*(1-Math.abs(hp%2-1));
+    var rgb, m;
+
+    if (h == undefined)         rgb = [0,0,0];
+    else if (0 <= hp && hp < 1) rgb = [C,X,0];
+    else if (1 <= hp && hp < 2) rgb = [X,C,0];
+    else if (2 <= hp && hp < 3) rgb = [0,C,X];
+    else if (3 <= hp && hp < 4) rgb = [0,X,C];
+    else if (4 <= hp && hp < 5) rgb = [X,0,C];
+    else if (5 <= hp && hp < 6) rgb = [C,0,X];
+
+    m = g*(1-c);
+
+    return [
+        (rgb[0]+m),
+        (rgb[1]+m),
+        (rgb[2]+m)
+    ];
+};
 
 /*
     Property: Chromath.convert
