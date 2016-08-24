@@ -22,7 +22,7 @@
    sv - The saturation of the HSV/HSB representation of the Chromath. A number between 0 and 1.
    l - The lightness of the HSL representation of the Chromath. A number between 0 and 1.
    v - The lightness of the HSV/HSB representation of the Chromath. A number between 0 and 1.
-   gr - The grayness of the HCG representation of the Chromath. A number between 0 and 1.
+   gt - The grayness of the HCG representation of the Chromath. A number between 0 and 1.
    c - The chroma of the HCG representation of the Chromath. A number between 0 and 1.
    
    Examples:
@@ -46,9 +46,9 @@ new Chromath({h: 0, s: 1, v: 1});         // HSV via object
 new Chromath('hsva(0, 100%, 100%, 1)');   // HSVA via CSS
 new Chromath({h: 0, s: 1, v: 1, a: 1});   // HSVA via object
 new Chromath('hcg(0, 100%, 100%)');       // HCG via CSS
-new Chromath({h: 0, c: 1, gr: 1});        // HCG via object
+new Chromath({h: 0, c: 1, gt: 1});        // HCG via object
 new Chromath('hcga(0, 100%, 100%, 1)');   // HCGA via CSS
-new Chromath({h: 0, c: 1, gr: 1, a: 1});  // HCGA via object
+new Chromath({h: 0, c: 1, gt: 1, a: 1});  // HCGA via object
 new Chromath('hsb(0, 100%, 100%)');       // HSB via CSS
 new Chromath({h: 0, s: 1, b: 1});         // HSB via object
 new Chromath('hsba(0, 100%, 100%, 1)');   // HSBA via CSS
@@ -98,7 +98,7 @@ module.exports = function Chromath( mixed )
             hcg = Chromath.rgb2hcg(rgb);
         } else if ('g' in channels) {
             if ('s' in channels) channels.c = channels.s;
-            hcg = util.hsl.scaled([channels.h, channels.c, channels.gr]);
+            hcg = util.hsl.scaled([channels.h, channels.c, channels.gt]);
             rgb = Chromath.hcg2rgb(hcg);
             hsl = Chromath.rgb2hsl(rgb);
             hsv = Chromath.rgb2hsv(rgb);
@@ -109,7 +109,7 @@ module.exports = function Chromath( mixed )
         r:  rgb[0],  g: rgb[1], b: rgb[2],
         h:  hsl[0], sl: hsl[1], l: hsl[2],
         sv: hsv[1],  v: hsv[2], a: channels.a,
-        c:  hcg[1], gr: hcg[2]
+        c:  hcg[1], gt: hcg[2]
     });
 
     return this;
