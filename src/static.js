@@ -105,6 +105,43 @@ module.exports = function ChromathStaticMethods(Chromath) {
 
       return new Chromath({h: h, s: s, v: v, a: a});
   };
+  
+  /*
+    Constructor: Chromath.hcg
+    Create a new Chromath instance from HCG values
+
+    Parameters:
+    h - Number, -Infinity - Infinity, representing the hue OR Array OR object (with keys h,s,l) of HCG values
+    c - Number, 0-1, representing the saturation
+    g - Number, 0-1, representing the lightness
+    a - (Optional) Float, 0-1, representing the alpha channel
+
+    Returns:
+    <Chromath>
+
+    Examples:
+    > > new Chromath.hcg(240, 1, 1).toString()
+    > "#0000FF"
+
+    > > new Chromath.hcg([240, 1, 1]).toString()
+    > "#0000FF"
+
+    > > new Chromath.hcg({h:240, s:1, v:1}).toString()
+    > "#0000FF"
+   */
+  Chromath.hcg = function (h, c, g, a)
+  {
+      var hcga = util.hsl.fromArgs(h, c, g, a);
+      h = hcga[0], c = hcga[1], g = hcga[2], a = hcga[3];
+
+      return new Chromath({h: h, c: c, g: g, a: a});
+  };
+  
+  /*
+    Constructor: Chromath.hcga
+    Alias for <Chromath.hcg>
+  */
+  Chromath.hcga = Chromath.hcg;
 
   /*
     Constructor: Chromath.hsva
