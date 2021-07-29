@@ -1,9 +1,9 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Chromath=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-var Chromath = _dereq_('./src/chromath.js');
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Chromath = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+var Chromath = require('./src/chromath.js');
 module.exports = Chromath;
 
-},{"./src/chromath.js":2}],2:[function(_dereq_,module,exports){
-var util = _dereq_('./util');
+},{"./src/chromath.js":2}],2:[function(require,module,exports){
+var util = require('./util');
 /*
    Class: Chromath
 */
@@ -1098,10 +1098,10 @@ Chromath.parsers = [
    }
 (end code)
  */
-Chromath.parsers = _dereq_('./parsers').parsers;
+Chromath.parsers = require('./parsers').parsers;
 
 // Group: Instance methods - color representation
-Chromath.prototype = _dereq_('./prototype')(Chromath);
+Chromath.prototype = require('./prototype')(Chromath);
 
 /*
   Property: Chromath.colors
@@ -1122,8 +1122,8 @@ Chromath.prototype = _dereq_('./prototype')(Chromath);
   > > Chromath.beige.toString()
   > "#F5F5DC"
 */
-var css2Colors  = _dereq_('./colornames_css2');
-var css3Colors  = _dereq_('./colornames_css3');
+var css2Colors  = require('./colornames_css2');
+var css3Colors  = require('./colornames_css3');
 var allColors   = util.merge({}, css2Colors, css3Colors);
 Chromath.colors = {};
 for (var colorName in allColors) {
@@ -1141,7 +1141,7 @@ Chromath.parsers.push({
 
 module.exports = Chromath;
 
-},{"./colornames_css2":3,"./colornames_css3":4,"./parsers":5,"./prototype":6,"./util":7}],3:[function(_dereq_,module,exports){
+},{"./colornames_css2":3,"./colornames_css3":4,"./parsers":5,"./prototype":6,"./util":7}],3:[function(require,module,exports){
 module.exports = {
     // from http://www.w3.org/TR/REC-html40/types.html#h-6.5
     aqua    : {r: 0,   g: 255, b: 255},
@@ -1162,7 +1162,7 @@ module.exports = {
     yellow  : {r: 255, g: 255, b: 0}
 };
 
-},{}],4:[function(_dereq_,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = {
     // http://www.w3.org/TR/css3-color/#svg-color
     // http://www.w3.org/TR/SVG/types.html#ColorKeywords
@@ -1299,8 +1299,8 @@ module.exports = {
     yellowgreen          : {r: 154, g: 205, b: 50}
 }
 
-},{}],5:[function(_dereq_,module,exports){
-var util = _dereq_('./util');
+},{}],5:[function(require,module,exports){
+var util = require('./util');
 
 module.exports = {
     parsers: [
@@ -1386,7 +1386,7 @@ module.exports = {
     ]
 };
 
-},{"./util":7}],6:[function(_dereq_,module,exports){
+},{"./util":7}],6:[function(require,module,exports){
 module.exports = function ChromathPrototype(Chromath) {
   return {
       /*
@@ -2078,7 +2078,7 @@ module.exports = function ChromathPrototype(Chromath) {
   };
 };
 
-},{}],7:[function(_dereq_,module,exports){
+},{}],7:[function(require,module,exports){
 var util = {};
 
 util.clamp = function ( val, min, max ) {
@@ -2187,6 +2187,5 @@ util.hsl = {
 
 module.exports = util;
 
-},{}]},{},[1])
-(1)
+},{}]},{},[1])(1)
 });

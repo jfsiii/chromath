@@ -30,10 +30,10 @@
     "build": "browserify -s Chromath -e index.js > dist/chromath.js; uglifyjs dist/chromath.js -c -m -o dist/chromath.min.js"
   },
   "devDependencies": {
-    "tap": "*",
+    "browserify": "^17.0.0",
     "quickcheck": "git://github.com/jfsiii/node-quickcheck.git",
-    "uglifyjs": "^2.3.6",
-    "browserify": "^3.44.2"
+    "tap": "*",
+    "uglify-js": "^3.14.1"
   },
   "testling": {
     "files": "test/*.js",
